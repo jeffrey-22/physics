@@ -1,55 +1,6 @@
-A text file for proposal stuff.
+Project Proposal Draft V1
 
-Library: 
-    CUDA
-    What for rendering?
-
-Phase 2: Full proposal draft: Filling out details
-The details will include:
-
-Writing a description, running to a few hundred words.
-Devising a timetable, dividing the project into about 10 work packages each taking about a fortnight of your effort. The first couple of these might be preparatory work and the last three writing your dissertation, with the practical work in the middle. These should be identifiable deliverables and deadlines leading to submission of your dissertation at the beginning of the Easter Term. You will probably write your progress report as part of the fifth work package.
-Determining special resources and checking their availability.
-Securing the services of a suitable Supervisor.
-Send all this to your Project Checkers and ask them to check the details. 
-
-Submission and Content of the Project Proposal
-Completed project proposals must be submitted via Moodle by noon on the relevant day.
-
-Format of the proposal
-A project proposal is expected to be about 1000 words long. It consists of the following:
-
-A standard cover sheet
-The body of the proposal (see below).
-When emailing drafts of your proposal to Project Checkers, please make sure they contain all of the information required on the final cover sheet.
-
-
-
-
-The body of the proposal should incorporate:
-
-An introduction and description of the work to be undertaken.
-A statement of the starting point.
-Description of the substance and structure of the project: key concepts, major work items, their relations and relative importance, data structures and algorithms.
-A criterion that can later be used to determine whether the project has been a success.
-Plan of work, specifying a timetable and milestones.
-Resource declaration.
-Introduction and description
-This text will expand on the title quoted for your project by giving further explanation both of the background to the work you propose to do and of the objectives you expect to achieve. Quite often a project title will do little more than identify a broad area within which you will work: the accompanying description must elaborate on this, giving details of specific goals to be achieved and precise characterisations of the methods that will be used in the process. You should identify the main sub-tasks that make up your complete project and outline the algorithms or techniques to be adopted in completing them. A project description should give criteria that can be used at the end of the year to test whether you have achieved your goals, and should back this up by explaining what form of evidence to this effect you expect to be able to include in your dissertation.
-
-Starting point
-A statement of the starting point must be present to ensure that all candidates are judged on the same basis. It should record any significant bodies of code or other material that will form a basis for your project and which exist at project proposal time. Provided a proper declaration is made here, it is in order to build your final project on work you started perhaps even a year earlier, or to create parts of your programs by modifying existing ones written by somebody else. Clearly the larger the input to your project from such sources the more precise and detailed you will have to be in reporting just what baseline you will be starting from. The Examiners will want this section to be such that they can judge all candidates on the basis of that part of work done between project proposal time and the time when dissertations are submitted. The starting point should describe the state of existing software at the point you write your proposal (so work that you may have performed over the summer vacation is counted as preparatory work).
-
-Success criterion
-Similarly, a proposal must specify what it means for the project to be a success. It is unacceptable to say “I’ll just keep writing code in this general area and what I deliver is what you get”. It is advisable to choose a reasonably modest, but verifiable, success criterion which you are as certain as possible can be met; this means that your dissertation can claim your project not only satisfies the success criterion but potentially exceeds it. Projects that do not satisfy the success criterion are, as in real life, liable to be seen as failures to some extent.
-
-Work plan
-You will need to describe how your project is split up into two- or three-week chunks of work and milestones, as explained in the planning section.
-
-Resource declaration
-You should list resources required, as described in the resources section.
-
-
+#############################
 
 Building a Physics Engine From Scratch
 
@@ -60,22 +11,21 @@ is a tool that simulates physical phenomena using a computer.
 The first computer, ENIAC, at one point used a Physics Engine to help design military weapons[ref].
 At the core of Physics Engine, the semi-realistic results are obtained through a combination of 
 computation efficient numerical approximations, 
-careful modelling of all the objects along with their physical attributes, 
+careful modelling of the objects, 
 and sometimes clever hacks that enables the engine to just make the cut.
 
-One main concept in Phyiscs Engine is Collision Detection.
-Typically the engine needs to handle what happens when two objects collide into each other.
-On top of this, the engine usually involves framerate.
-The concept of framerate brings the complexity of artefacts like a fast moving projectile phasing through thin objects.
-Based off the needs and how much people could tolerate such artefacts, 
-the engines are mainly split into two classes, real-time and high-precision,
-where real-time engines are required to handle such events in real time,
-but high-precision engines may make full use of processing power of the hardware to carry out very precise physics.
-
-A typical modelling in Physics Engine is to differentiates rigid bodies and soft bodies.
-Rigid bodies are idealized solid body which cannot be deformed.
-Soft bodies, on the other hand, could change its shape.
-It is very common to prioritize simulating rigid bodies due to their simplicity.
+There are some common terminologies that in Physics Engines.
+*Rigid body* is an individual object which will be simulated in the engine.
+A rigid body is an object that does not distort or bend, as opposed to soft body and fluid, 
+which gives rigid bodies the benefit of simplicity.
+A typical Physics Engine needs to keep track of its mass, position, orientation, (both linear and angular) velocity and impulse.
+*Collider* is a part of a rigid body.
+Complex rigid bodies tend to get separated into simple, convex colliders like spheres and boxes in the pipeline.
+*Collision Detection* and *Collision Resolution* are components of the engine which handle the interaction between colliders.
+Commonly Physics Engine continuously advances the time by a small fraction of a second and moving the objects according to their speed.
+After each position update, Collision Detection will kick in and detect if a pair of colliders would intersect.
+If so, Collision Resolution will decide whether and how they will get bounced and separate apart, 
+updating their velocities accordingly.
 
 However, the most common way Physics Engine is presented is as a big, mysterious library where all the computation is done under the hood.
 A wide selection of open-source physics engine are available online, including PhysX[ref], Box2D[ref] and Bullet[ref].
@@ -85,20 +35,29 @@ Description
 
 My project aims to build a 3D real-time physics engine from scratch that implements basic modules, 
 without making use of any currently available physics engine.
-In the end, it should be able to simulate simple modules like rigid bodies and basic collisions.
 My focus will be to realise the visual effects rather than being extermely accurate or efficient considering
 the limited time, my available hardware resources, and the easiness of experiments and showcase.
-This is also why I choose real-time over high-precision.
-Overall, this project will be a great opportunity for myself to learn more about physics and programming.
+This is also why I choose to build a real-time physics engine over a high-precision one.
 In addition, this project will also provide a basic framework that is easy to be extended upon in the future, if necessary.
+Overall, this project will be a great opportunity for myself to learn more about physics and programming.
 
-Aside from these basic core modules, I plan to spend the majority of the time diving into one advanced area, 
-namely fluid simulation.
-Fluid simulation involves approximations to physical equations, and have different levels of complexity.
+Here is a list of the basic core modules I plan to implement:
+- Object Modelling: Create data structures for rigid bodies, and design interfaces for applying forces and adding colliders.
+- Collision Detection: Adopt many algorithms to decide if collisions happen.
+- Bounce: Part of Collision Resolution where some maths are used to find the approximated results of a bounce.
+- Friction: Part of Collision Resolution where vast assumptions are used to simulate real-life friction.
+- Stability: Part of Collision Resolution where some hacky methods are used to prevent certain visual artefacts, 
+for example if two objects are stacked together the upper one should not be bouncing up and down constantly.
+
+The project could then be evaluated by comparisons using simple experiments[ref] against existing popular physics engines.
+
+Of course, there are many other modules I plan to have a look at as extensions.
+One of them is fluid simulation.
+Fluid simulation involves approximations to fluid equations, 
+and can have different levels of complexity depending on the topic.
 For example, 
 simulation of buoyant force of hard objects submerged in water will be simpler than simulation of the flow of the fluid.
-I will try my best to cover as much in fluid simulation as I can, 
-and maybe even find my own solution to tackle some of the tricky problems.
+I will try my best to cover as much in fluid simulation as I can.
 
 There are more possible extension tasks to do if I have more time. 
 For one, it is nice to have real time rendering to accompany my engine.
@@ -107,11 +66,11 @@ but it is certainly better to be able to not rely on them.
 
 Another extension is to take a look at the performance of the engine.
 I will give different implementations for CPU and for GPU, 
-which will then allow me to draw comparisons about their difference in performance.
+which will then allow me to draw comparisons about their contributions in performance.
 
 Finally, soft-body simulation is also a possible module to look into.
 Unlike rigid bodies, now the shape of the objects can change in a certain degree.
-I will need to research and choose a method to implement. 
+I will need to research and choose what to implement. 
 
 Starting Point
 
@@ -131,24 +90,21 @@ Success criterion
 
 For the core:
 
-1. The Physics Engine is able to simulate rigid body and its collisions with sufficient accuracy on a simple sample (around 10 objects).
-This will be demonstrated using videos or interactive clients, and with the help of third-party rendering libraries like Blender if necessary.
+1. Implement all basic modules: Object Modelling, Collision Detection, Bounce, Friction, Stability.
 
-2. The Physics Engine is able to simulate rigid body and its collisions with sufficient stability on a simple sample (around 10 objects).
-The added artefacts should be sufficiently minimal compared to popular open-source physics engines.
+2. Evaluate the engine by comparing it with popular existing engines.
 
-3. The Physics Engine is able to simulate rigid body and its collisions in real time on a simple sample (around 10 objects).
-There should not be noticable lag during the simulation when runnig on my laptop.
+3. Demonstrate the engine works with screenshots of simple examples.
 
 For extensions (ordered by priority):
 
-4. The Physics Engine is able to simulate most fluid dynamics with sufficient accuracy and stability in real time on a simple sample.
+4. Implement fluid dynamics.
 
-5. The real time rendering part of the engine is able to demonstrate criteria 1-4 without third-party rendering libraries. 
+5. Implement real time rendering, which should allow the project meet criteria 1-4 without third-party rendering libraries. 
 
 6. Provide performance comparisons for whether GPU is used, and for other interesting parameters like the number of cores used.
 
-7. The Physics Engine is able to simulate most soft-body dynamics with sufficient accuracy and stability in real time on a simple sample.
+7. Implement soft-body dynamics.
 
 Work plan
 
@@ -173,59 +129,55 @@ Milestone: Able to produce a blank video or an empty interactive demo
 
 * 30 Oct - 19 Nov
 
-Start to implement rigid bodies and collisions
-Iterative development model used here
+Implement Object Modelling
 
 * 20 Nov - 3 Dec
 
-Buffer phase
-Finish up the implementations of rigid bodies and collisions
+Implement Collision Detection
 
 Christmas break
 
 Sat 4 Dec - Mon 15 Jan
 
-Finish everything for the core delivery
-Research into fluid simulation
-
-Milestone: Complete the core
+Implement Bounce
 
 * 4 Dec - 17 Dec
 
-Implment fluid simulation
+Implememt Friction
 
 * 18 Dec - 14 Jan
 
-Continue with fluid simulation
-Start to implement real-time rendering if done
+Implement Stability
+
+Milestone: Complete the core
 
 Lent term 
 
 * 15 Jan - 28 Jan
 
+Buffer phase for core implementation
+Core evaluation if core is completed
 Write progress report
-Implement real-time rendering
 
 Milestone: Completed a draft of the progress report
 
 * 29 Jan - 15 Feb
 
-Implement performance comparisons
-Perform data collections and experiments
+Buffer phase for core evaluation
+Start extension implementations
 Finish progress report
 
 Milestone: Submit the Progress Report (Deadline 2 Feb)
 
 * 16 Feb - 1 Mar
 
-Continue the implementation on performance comparisons
-Implement soft-body dynamics if done
-Start writing dissertation
+Implement extensions
+Start dissertation writeup
 
 * 1 Mar - 15 Mar
 
+Wrap up implementations
 Continue writing the dissertation
-Wrap up any implementations
 
 Milestone: Implementations completed
 
