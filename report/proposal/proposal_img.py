@@ -6,8 +6,8 @@ from pysketcher.backend.matplotlib import MatplotlibBackend
 
 figure = ps.Figure(-1, 12, -1, 2, MatplotlibBackend)
 
-boxA = ps.Rectangle(ps.Point(0, 0), 1, 1)
-boxB = ps.Rectangle(ps.Point(10, 0), 1, 1)
+boxA = ps.Circle(ps.Point(0.5, 0.5), 1)
+boxB = ps.Circle(ps.Point(10.5, 0.5), 1)
 boxA.style.line_width = 10
 boxB.style.line_width = 10
 arrowA = ps.Arrow(ps.Point(2, 0.5), ps.Point(3, 0.5))
