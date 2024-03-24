@@ -1,0 +1,51 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx, indentfirst, tikz, gensymb, url} % Required for inserting images
+\usepackage[load-configurations = abbreviations]{siunitx}
+\def\checkmark{\tikz\fill[scale=0.4](0,.35) -- (.25,0) -- (1,.7) -- (.25,.15) -- cycle;} 
+
+\title{Progress Report - Building a Physics Engine From Scratch}
+\date{Jeffrey Song (js2657@cam.ac.uk) \\ Supervisor: Joe G March \\ DoS: Richard W Sharp \\ Checkers: Cecilia Mascolo and Andreas Vlachos}
+
+\begin{document}
+
+\maketitle
+
+\section*{Accomplishments}
+
+\subsection*{Core module implementation}
+
+I have fully implemented most fundamental modules necessary for my physics engine. These include geometry basics, rigid bodies, and a basic collision detection system. I have also set up my engine for a feedback loop with the renderer to observe the outcomes. These core modules should form the backbone of the engine and provide interfaces for future addition and improvement.
+
+\subsection*{Core module evaluation}
+
+To demonstrate the functionality of the engine, I have the renderer generate short videos based on the coordinates calculated by the engine. Currently, the engine can already yield successful results in particle collision simulations, and it could be showcased by a small video. This should serve as validation of the core features.
+
+\section*{Challenges and Adjustments}
+
+\subsection*{Testing on rigid bodies}
+
+After successfully simulating particle movement, I have been trying to conduct similar experiments on rigid bodies. Unfortunately, the renderer seems to be more complicated than what I anticipated, as it requires additional animation feed when applying rotation. These challenges have prompted adjustments in the schedule to allow for more time in debugging and refining the rendering process.
+
+\subsection*{Schedule}
+
+The project is roughly on track with respect to my schedule, currently being at the final stages of core implementation.
+
+\section*{Next Steps}
+
+\subsection*{Upcoming presentation}
+
+As required I am preparing for a presentation showcasing my current accomplishments and highlighting the challenges.
+
+\subsection*{Finalising core implementation} 
+
+With the majority of the core implementation complete, I am mostly left with the issues of converting the rotation of rigid bodies to renderer-friendly format. And then I should be able to fix any bugs that appear from the video and finalise the rigid body part of the core.
+
+\subsection*{Core evaluation}
+
+Following the completion of the core implementation, I plan to conduct a thorough evaluation of the physics engine. This will involve running small-scale experiments to test the accuracy of the collision functions against real world physics law, and comparing them with other physics engines. This should allow me to meet the success criteria given in the project proposals.
+
+\subsection*{Extensions}
+
+After I have ensured completion of the success criteria, I will start working on soft-bodies first, as one possible extension of my project. The implementation involves researching possible algorithms, modeling soft-bodies in my engine and finally tuning them to feel realistic under proper rendering.
+
+\end{document}

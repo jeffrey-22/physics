@@ -1,0 +1,81 @@
+About halfway through the project you are required to report on the progress that you have made. There is a formal requirement for a written report of 300 to 500 words, which will go to your project checkers for review. You will then prepare a short (~5 minute) presentation which will summarise the progress report.  This will be presentated to your project checkers and all other students in the same project checker group.
+
+The Progress Reports and Presentations are mandatory. Any student unable to attend the presentation with his or her own project checkers should arrange to join another group, and must inform both sets of project checkers, and Student Administration. Any student who cannot attend any of the sessions must present a letter of excuse from the Senior Tutor of their College.
+
+The Progress Reports and Presentations provide a natural opportunity to consider adjustments to your original plan and schedule. In many cases these will be minor. In a few cases, the project checkers may feel that there is a need to discuss any special difficulties which have arisen in a more private setting. In such circumstances they will arrange to meet you individually. You may request an individual meeting yourself if you feel that it is necessary; this request should be put in writing at the end of your written report.
+
+
+Write a progress report about my physics engine project. Here is a description of what I have done so far:
+
+My project goal is to implement my own physics engine, namely implementing rigid body dynamics and collision detection, then feeding the results to a renderer to visualise the results. So far I've implemented all the basic modules, including interfaces for the renderer, rigid bodies and the engine feedback loop. I've also rendered a small video showcasing part of the functions I've implemented. Currently I'm still fixing bugs in the rendering part to incorporate the correct animation, and it seemed that some conversion were needed. In summary I was finishing up the core implementation, and it should be presentable soon. I need to then work on the evaluation of the core, including some small experiments testing the accuracy of the collision functions.
+
+
+
+Progress Report on Physics Engine Project
+
+I am pleased to provide an update on the progress of my physics engine project, which aims to implement rigid body dynamics and collision detection, integrating the results with a renderer for visualization. As of now, the project is on track, and I have made significant strides in achieving the outlined goals.
+
+Accomplishments:
+
+Basic Module Implementation: I have successfully implemented all the fundamental modules necessary for the physics engine. These include interfaces for the renderer, rigid bodies, and the engine feedback loop. These modules form the backbone of the entire system and set the stage for further development.
+
+Rendering Showcase: To demonstrate the functionality of the implemented modules, I have created a small video showcasing the initial capabilities of the physics engine. This not only serves as a validation of the core features but also provides a tangible representation of the project's progress.
+
+Bug Fixing: Currently, my focus is on addressing bugs in the rendering component to ensure the correct animation output. I have encountered challenges that require careful consideration of conversions, and I am actively working on resolving these issues. Debugging and refining the rendering process are crucial steps to enhance the overall quality of the project.
+
+Next Steps:
+
+Finalizing Core Implementation: With the majority of the core implementation complete, the project is entering its final stages. I anticipate that the core functionality will be fully operational soon, providing a solid foundation for subsequent phases.
+
+Evaluation Phase: Following the completion of the core implementation, I plan to conduct a thorough evaluation of the physics engine. This will involve running small-scale experiments to test the accuracy of the collision functions and ensure the reliability of the overall system.
+
+Challenges and Adjustments:
+While progress has been steady, I have encountered challenges in the rendering phase that necessitate additional attention. These challenges have prompted adjustments in the schedule to allow for more time in debugging and refining the rendering process.
+
+Upcoming Presentation:
+I am preparing a concise presentation that will summarize the key aspects of the project, showcasing the implemented modules, the rendering video, and highlighting the steps taken to address challenges. This presentation will be delivered in a five-minute session to project checkers and fellow students.
+
+In conclusion, the physics engine project is progressing well, with the core implementation nearing completion. The upcoming evaluation phase and the resolution of rendering challenges will contribute to the overall success of the project. I remain committed to delivering a robust and functional physics engine that meets the project's objectives.
+
+
+
+807288966
+
+
+Progress Report on Physics Engine Project
+
+Accomplishments:
+
+- Core module implementation:
+
+I have fully implemented most fundamental modules necessary for my physics engine. These include geometry basics, rigid bodies, and a basic collision detection system. I have also set up my engine for a feedback loop with the renderer to observe the outcomes. These core modules should form the backbone of the engine and provide interfaces for future addition and improvement.
+
+- Core module evaluation:
+
+To demonstrate the functionality of the engine, I have the renderer generate short videos based on the coordinates calculated by the engine. Currently, the engine can already yield successful results in particle collision simulations, and it could be showcased by a small video. This should serve as validation of the core features.
+
+Challenges and Adjustments:
+
+- Testing on rigid bodies:
+
+After successfully simulating particle movement, I have been trying to conduct similar experiments on rigid bodies. Unfortunately, the renderer seems to be more complicated than what I anticipated, as it requires additional animation feed when applying rotation. These challenges have prompted adjustments in the schedule to allow for more time in debugging and refining the rendering process.
+
+Next Steps:
+
+- Upcoming presentation:
+
+As required I am preparing for a presentation showcasing my current accomplishments and highlighting the challenges.
+
+- Finalising core implementation: 
+
+With the majority of the core implementation complete, I am mostly left with the issues of converting the rotation of rigid bodies to renderer-friendly format. And then I should be able to fix any bugs that appear from the video and finialise the rigid body part of the core.
+
+- Core evaluation: 
+
+Following the completion of the core implementation, I plan to conduct a thorough evaluation of the physics engine. This will involve running small-scale experiments to test the accuracy of the collision functions against real world physics law, and comparing them with other physics engines. This should allow me to meet the success criteria given in the project proposals.
+
+- Extensions: 
+
+After I have ensured completion of the success criteria, I will start working on soft-bodies first, as one possible extension of my project. The implementation involves researching possible algorithms, modeling soft-bodies in my engine and finally tuning them to feel realistic under proper rendering.
+
+In conclusion, the project is roughly on track with respect to the schedule.
