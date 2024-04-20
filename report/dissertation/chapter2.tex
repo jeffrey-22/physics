@@ -1,0 +1,336 @@
+\documentclass[runningheads]{llncs}
+\usepackage{graphicx}
+\usepackage{lipsum}
+\usepackage{amsmath}
+
+\begin{document}
+
+\chapter{[Chapter 2] Preparation}
+
+\section{Starting point}
+
+\subsubsection{Knowledge}
+
+Relevant knowledge came from NST Maths in IA, Introduction to Graphics in IA, and Complexity Theory in IB, despite them being only helpful in providing concepts and basic ideas for manipulating computational geometry. I had previously briefly touched on computational geometry related algorithms in coding practicing sites like leetcode prior to the project.
+
+\subsubsection{Reference material}
+
+I did not read any of the tutorials and guides prior to the project, but I knew they existed in a somewhat plentiful quantity, which lent me some confidence. After starting with the project, I read many of them during the early stages of implementation, including [], [] and [].
+
+\subsubsection{Codebase and libraries}
+
+I decided to use C++ as the main programming language for the project, which Programming in C and C++ in IB had covered, plus me having some experience with it from coding tutorials online.
+
+As for the libraries, I had no experience with any of the relevant rendering libraries, so I had to learn from scratch on using Blender. Besides Blender, several third-party libraries listed below provided support for utitilies like testing and plotting.
+
+[table: numpy, matplotlib, etc.]
+
+\subsubsection{Development tools}
+
+I used Visual Studio Code on my laptop (specs) for engine implementation. Some plots and tests were done with Google Colab and Kaggle Notebook. Platforms including GitHub and Google Drive allowed for backups and simple version control for the project. For the writeup of this dissertation, Overleaf helped with \LaTeX compilation and file management.
+
+\section{Structure of the engine / Background theory}
+
+Physics engine here in my project specifically refers to Rigid body simulation, as it is the main component and the building block of any large-scale complete game engine. Other possible compoents are considered extensions. The main working loop of the engine could be described by a simple feedback loop framework in [figure]
+
+[figure]
+
+After the initial setup of the objects as rigid bodies, the engine begins a main feedback loop. Each iteration of the loop attempts to advance the simulation by a small time frame, and at the end of each time frame, the position and rotation data could be updated, and then serialized and exported to the rendering software, currently Blender.
+
+In each iteration of the loop, all rigid bodies are assumed to start in a nonpenetration state, that is, no pairs of rigid bodies intersect with each other. But touching on some faces are allowed. Then, we perform the unconstrained simulation for a small timeframe $dt$. During this simulation it is assumed that no collisions happened. Finally, collision detection and resolution are performed, correcting mistakes from the unconstrained simulation. Some more details of these steps are described below.
+
+\subsection{Unconstrained simulation / Rigid body modelling}
+
+(How the linear/angular speed, rotation and translation defines the state of a rigid body.)
+
+In general, the goal of unconstrained simulation is to first track the status of all rigid bodies as reasonable mathematical data structure, and then update them assuming no collisions ever happen.
+
+The state of a rigid body entails the location $x$, rotation $R$, linear momentum $p$, and angular momentum $L$, relative to the centre of the entire simulation space. The location and rotation in particular encapsulates where to place them in the world, and need to be exported for rendering at the end of each iteration. The entire state can be expressed as a tuple of these information, say $S = (x, R, p, L)$, and it gives the main moving characteristics of the rigid body. This state can be viewed as a function of time $t$. The derivative of the state with respect to time, $\frac{d}{dt}S$, can then be derived using variables from $S$, which would be used when advancing by the small time frame $dt \approx \frac{1}{30}s$ for example in 30 fps rendering.
+
+\begin{equation}
+\frac{d}{dt}S = (\frac{d}{dt}x, \frac{d}{dt}R, \frac{d}{dt}p, \frac{d}{dt}L)
+\end{equation}
+
+Each element of the state needs to be defined then differentiated separately.
+
+\subsubsection{Location $x$} 
+
+A 3-element vector containing the $x$ $y$ $z$ coordinates of the center of the rigid body relative to the world center. The center of a rigid body is the center of mass, which is defined as
+
+\begin{equation}
+x=\frac{\sum{m_i}{x_i}}{M}
+\end{equation}
+
+if we consider the body is made up of many small particles, the $i$-th one at position $x_i$ in world space while having mass $m_i$. $M$ is the total mass of the body
+
+\begin{equation}
+M=\sum{m_i}
+\end{equation}
+
+Here $x_i$ are vectors and masses are scalars, so the center of mass is a vector of the center of mass coordinates. For simplicity think of it as the geometric center of the body, and think of the density to be uniform across the body.
+
+Differentiating $x$ gives the linear velocity $v$.
+
+\begin{equation}
+v = \frac{d}{dt}x
+\end{equation}
+
+\subsubsection{Rotation $R$} 
+
+A $3\times 3$ matrix describing how the rigid body has rotated around its center. For any particle on the body, consider $r_i$ to be its body space location, i.e. the coordinates if the body is placed upright, with its center of mass located at the origin $(0, 0, 0)$. Then, the world space location of the particle $x_i$ can be computed with the help of the rotation matrix, then translated using the location of the center of mass
+
+\begin{equation}
+x_i = R\times r_i + x
+\end{equation}
+
+$R$ is a rotation matrix, which comes with many properties, for example if
+
+\begin{equation}
+    R = \begin{pmatrix}
+        R_{xx} & R_{xy} & R_{xz} \\
+        R_{yx} & R_{yy} & R_{yz} \\
+        R_{zx} & R_{zy} & R_{zz}
+    \end{pmatrix}
+\end{equation}
+
+then multiplying R by an axis-aligned unit vector, say $(1, 0, 0)$, gives the result of rotating the corresponding axis
+
+\begin{equation}
+R \times\begin{pmatrix}
+    1 \\
+    0 \\
+    0
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+    R_{xx} \\
+    R_{yx} \\
+    R_{zx}
+    \end{pmatrix}
+\end{equation}
+
+Angular velocity $\omega$ is used to describe the speed of rotation. Slightly counterintuitively, $\omega$ is a vector, where its direction gives the rotating axis and its magnitude gives the speed.
+
+Clearly differentiating the rotation matrix $R$ does not give the angular velocity vector $\omega$. Instead, with some careful analysis [appendix?], we would obtain
+
+\begin{equation}
+\frac{d}{dt}R = \omega ^* \times R
+\end{equation}
+
+where $v^*$ is the star operation that transforms vector $v=(x, y, z)$ to a matrix:
+
+\begin{equation}
+    v^* = \begin{pmatrix}
+        0 & -z & y \\
+        z & 0 & -x \\
+        -y & x & 0
+    \end{pmatrix}
+\end{equation}
+
+Note a useful property of this operation
+
+\begin{equation}
+    a^* b = a \times b
+\end{equation}
+
+\subsubsection{Linear momentum $p$} 
+
+The linear momentum $p$ is defined as sum of products of mass and velocity of all particles comprising the body
+
+\begin{equation}
+    p = \sum m_i v_i
+\end{equation}
+
+making $p$ a vector.
+
+Velocity of a particle $v_i$ is the derivative of its world space location $x_i$
+
+\begin{equation}
+\begin{align*} 
+    v_i &= \frac{d}{dt}x_i \\
+        &= \frac{d}{dt}(R r_i + x) && \text{(by equation xxx)} \\
+        &= \omega^* R r_i + v \\
+        &= \omega \times (R r_i) + v && \text{(by equation xxx)} \\
+        &= \omega \times (R r_i + x - x) + v \\
+        &= \omega \times (x_i - x) + v
+\end{align*} 
+\end{equation}
+
+Now to derive $p$
+
+\begin{equation}
+\begin{align*} 
+    p &= \sum m_i v_i \\
+      &= \sum m_i (\omega \times (x_i - x) + v) \\
+      &= \sum m_i v + \omega \times \sum m_i (x_i - x) \\
+      &= \sum m_i v + \omega \times (\sum m_i x_i - M x) \\
+      &= \sum m_i v && \text{(by equation xxx)} \\
+      &= (\sum m_i) v \\
+      &= M v
+\end{align*} 
+\end{equation}
+
+Differentiating $p$ gives the total force $F$ acting on the body
+
+\begin{equation}
+\frac{d}{dt} p = F
+\end{equation}
+
+The force can be imagined as the sum of the forces on every individual particle of the body
+
+\begin{equation}
+F = \sum F_i
+\end{equation}
+
+\subsubsection{Angular momentum $L$} 
+
+Angular momentum $L$ is a vector defined by
+
+\begin{equation}
+L = I \omega
+\end{equation}
+
+where $I$ is a $3\times 3$ matrix known as inertia.
+
+\begin{equation}
+I = R I_{body} R^T
+\end{equation}
+
+where $I_{body}$ is a constant matrix describing the shape of the rigid body, calculated in body space
+    
+\begin{equation}
+I_{body} = \sum m_i((r_i^T r_i)\textbf{1} - r_i r_i^T)
+\end{equation}
+
+where $\textbf{1}$ is the identity matrix.
+
+Torque $\tau_i$ describes how the body would rotate if individual force $F_i$ is applied to each particle. Total torque $\tau$ is the sum of individual torque.
+
+\begin{equation}
+\tau_i = (x_i - x) \times F_i
+\end{equation}
+
+\begin{equation}
+\tau = \sum \tau_i
+\end{equation}
+
+Differentiating $L$ gives the total torque $\tau$, similar to how differentiating $p$ gives the total force $F$.
+
+\begin{equation}
+\frac{d}{dt} L = \tau
+\end{equation}
+
+\subsection{Collision detection and resolution / Nonpenetration constraints}
+
+If at the end of the timeframe two rigid bodies end up clipping into each other, then there must have been a collision during the timeframe, meaning the states need to be corrected. This is done by first scanning for collision detection, and if detected, calculate relevant contact information, such as when and where two objects collide. Then the information will be used for collision resolution, where the velocity needs to be corrected before resuming the simulation.
+
+\subsubsection{Collision detection}
+
+Finding separating plane is a popular method for detecting collisions among convex polyhedrons. Concave objects are trickier to deal with, and luckily most concave objects are good enough when represented by a bounding convex object in practice. In rare cases convex decomposition is required, which is far more complicated and computationally intensive, with the current popular choice being V-HACD [reference], and its complexity should be outside the scope of this project.
+
+Consider two convex polyhedrons A and B. They are considered to be collided if any point in A is also in B. It is actually easier to detect if the pair has not collided, in which case no part of the two objects intersect. Note that having some parts touched between them does not count as collision, so as to avoid repeatedly resolving collision when two touching objects happen to move at the same speed. Using the convex property, there must be a separating plane that separates the space into either only containing A or only containing B.
+
+Furthermore, it is sufficient to only consider two cases. When both cases fail, it can deducted that no separating planes exist.
+
+\begin{itemize}
+\item Face-vertex collision. Consider the separating plane to be one of the faces of the original objects.
+\item Edge-edge collision. Consider the separating plane to be between one edge of A and one edge of B, with its normal equal to the cross product of these two edges. 
+\end{itemize}
+
+Both cases can be checked by brute force over faces or edges of the two objects.
+
+In the case a collision does happen, find the exact moment the contact takes place, and record the normal of the separating plane at that moment, say $n$, as well as the points on the two bodies that contact. Next, hand the information over to collision resolution.
+
+\subsubsection{Collision resolution}
+
+Only the velocities at direction $n$ are altered after the collision takes place, so the first thing is to obtain component of the relative velocity in the $n$ direction using dot product.
+
+\begin{equation}
+v_{AB} = n \cdot (v_B - v_A)
+\end{equation}
+
+where $v_{AB}$ measures the relative velocity as a scalar, while $v_A$ and $V_B$ are the velocity of the contacting points on object A and B respectively at the moment of collision.
+
+The law of collisions states
+
+\begin{equation}
+v_{AB}' = -\epsilon v_{AB}
+\end{equation}
+
+where $v_{AB}'$ is the same quantity after the collision happens, and $\epsilon$ is the coefficient of resititution.
+
+This coefficient $\epsilon$ satisfies $0 \leq \epsilon \leq 1$. At $\epsilon = 0$, two bodies will move together after collision, known as resting contact. At $\epsilon = 1$, two bodies perfectly bounce backwards. In practice, the user could modify this coefficient to achieve the desired effect.
+
+In order to preserve this law, impulse needs to applied to both bodies in different directions. Impulse is the effect of very big force applied in a short duration of time, which encapsulates the interaction of a collision, denoted by a vector. The direction of this vector is of course $n$, and the magnitude denotes how hard the body gets pushed. The impulse on A $J_A$ and impulse on B $J_B$ satisfy
+
+\begin{equation}
+J_A = -J_B
+\end{equation}
+
+\begin{equation}
+J_A = k \cdot n
+\end{equation}
+
+where $k$ is some scalar derivable with contact information
+
+\begin{equation}
+k=\frac{-(1+\epsilon)v_{AB}}{\frac{1}{M_a}+\frac{1}{M_b}+n\cdot (I_A^{-1}(r_A\times n)) \times r_A + n\cdot (I_B^{-1}(r_b \times n)) \times r_B}
+\end{equation}
+
+$I_A$ is the inertia of A, $M_A$ is the mass of A, $r_A$ is the body space coordinates of the point of contact in A.
+
+The velocity change is just impulse divided by mass, so say for A with mass $M_A$, the change of velocity $\Delta v_A$ is just
+
+\begin{equation}
+\Delta v_A = \frac{J_A}{M_A}
+\end{equation}
+
+Change in angular velocity is
+
+\begin{equation}
+\Delta \omega_A = I_A^{-1} (r_A \times J_A)
+\end{equation}
+
+\subsection{Rendering / API}
+
+In the grand scheme of the physics engine, rendering is needed for visualization and debugging, which is done by supplying coordinates data at the end of each time frame to the renderer Blender.
+
+The engine should also supply APIs for the user to set up their own simulation environment. Customizations include adding new cuboid rigid bodies with different masses, locations and initial velocity, fixed bodies, time of experimentation and so on.
+
+\section{Requirement analysis}
+
+(Timeline, backup plan, development model)
+The requirements stayed consistent with the ones listed in the Project Proposal (Appendix []). The core project aims to provide a physics engine capable of modelling rigid bodies, collision detection, and collision resolution (either bouncy or resting). Then the engine will be evaluated with comparisons with existing physics engines under simple experimentations. For extensions adding supports for fluid dynamics, soft body dynamics and real time rendering, as well as evaluating the performance under different parameters.
+
+Main list of deliverables with risk analysis, different modules with dependency
+
+[List: deliverable Implement XXX, Risk Low/Medium/High, Priority Low/Medium/High]
+
+[Modules, arrow meaning depends on, colorcoded]
+
+\subsection{Development model}
+
+The project mainly tackles software engineering challenges. The waterfall development model suits best for the reasons below. 
+
+\begin{itemize}
+\item The separation into different stages gives a good indication on the progress of the project throughout. 
+\item The project has well defined requirements, resources and technologies, allowing the separation to be clear.
+\item Balancing between the stages are very much needed, as for example spending too much time on researching is not desireable, and the implementations need to undergo testing. The division of stages reminds me to not get stuck at one step and not move on.
+\item Contrast with agile development, the project focuses on building one predetermined software, so reiterations are unecessary.
+\end{itemize}
+
+During the process of the development there has been some delays in some parts, so I spent some buffer time to catch up with some difficulties, particularly in the implementation stage and dissertation writeup stage. Gantt chart is also used for the planning of the project:
+
+[Gantt chart of timeline]
+
+\noindent\rule{12cm}{0.4pt}
+
+TODO:
+
+figures
+
+citations
+
+corrections
+
+\end{document}

@@ -1,0 +1,41 @@
+\documentclass[runningheads]{llncs}
+\usepackage{graphicx}
+\usepackage{lipsum}
+\usepackage{amsmath}
+
+\begin{document}
+
+\chapter{[Chapter 3] Implementation}
+
+\section{Repository Overview}
+
+TBA
+
+\section{TBA}
+
+TBA
+
+\noindent\rule{12cm}{0.4pt}
+
+TODO:
+
+citations
+
+content filling
+
+figures
+
+*World space* refers to the main space where physics is simulated. For particles, their *states* can be simply described as its location, or more precisely, by a 3-element vector inscribing their coordinates in the three axis. A rigid body however may be rotated in addition to translation, which would require an additional 3x3 matrix, $R$, in its state. For a rigid body, we consider its *center of mass* (will elaborate later) as the centre, and different locations on the rigid body can be described with the *body space* locations relative to the centre. Let's call the body space location $loc_{body}$ and the world space location $loc_{world}$, then we can imagine the point being rotated around the centre of mass (at location $loc_{centre}$) using rotation matrix $R$ as the equation
+
+
+This chapter should describe what was actually produced: the programs which were written, the hardware which was built or the theory which was developed. Any design strategies that looked ahead to the testing stage should be described in order to demonstrate a professional approach was taken.
+
+Descriptions of programs may include fragments of high-level code but large chunks of code are usually best left to appendices or omitted altogether. Analogous advice applies to circuit diagrams or detailed steps in a machine-checked proof.
+
+The implementation chapter should include a section labelled "Repository Overview". The repository overview should be around one page in length and should describe the high-level structure of the source code found in your source code repository. It should describe whether the code was written from scratch or if it built on an existing project or tutorial. Making effective use of powerful tools and pre-existing code is often laudable, and will count to your credit if properly reported. Nevertheless, as in the rest of the dissertation, it is essential to draw attention to the parts of the work which are not your own. 
+
+It should not be necessary to give a day-by-day account of the progress of the work but major milestones may sometimes be highlighted with advantage.
+
+$loc_{world} = R \times loc_{body} + loc_{centre}$
+
+\end{document}
