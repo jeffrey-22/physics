@@ -1,1 +1,1 @@
-g++ test.cpp collision_detection.cpp ../../geometry/*.h -o test
+g++ test.cpp engine.cpp collision_detection.cpp collision_resolution.cpp ../../geometry/*.h *.h -o test

@@ -1,8 +1,7 @@
 #ifndef RIGIDBODY_H
 #define RIGIDBODY_H
 
-#include "../../geometry/matrix.h"
-#include <fstream>
+#include "environment.h"
 
 class RigidBodyState {
 public:
@@ -17,6 +16,11 @@ public:
     double invMass;
 };
 
+class RigidBodyForceAndTorque {
+public:
+    Vector force, torque;
+};
+
 class RigidBody {
 public:
     double mass;
@@ -25,21 +29,30 @@ public:
     RigidBodyState state, derivativeState;
 
     RigidBodyAuxilaries auxilaries;
-
-    Vector force, torque;
     
+    RigidBody(double mass, const Matrix& bodySpaceInertiaTensor, Vector initialPosition = ORIGIN, 
+    Matrix initialRotation = IDENTITY, Vector initialLinearMomentum = ORIGIN, Vector initialAngularMomentum = ORIGIN)
+        : mass(mass), bodySpaceInertiaTensor(bodySpaceInertiaTensor) {
+
+        }
 private:
-    void computeAuxilaryQuantities() {
+    RigidBodyAuxilaries computeAuxilaryQuantities(RigidBodyState state) {
+        RigidBodyAuxilaries auxilaries;
         auxilaries.invMass = 1.0 / mass;
         auxilaries.linearVelocity = state.linearMomentum * auxilaries.invMass;
         auxilaries.inertia = state.rotation * bodySpaceInertiaTensor * state.rotation.inverse();
         auxilaries.angularVelocity = auxilaries.inertia.inverse() * state.angularMomentum;
+        return auxilaries;
     }
-    void computeDerivative() {
+    RigidBodyState computeDerivative(RigidBodyState state, RigidBodyForceAndTorque forceAndTorque) {
+        RigidBodyAuxilaries auxilaries;
+        auxilaries = computeAuxilaryQuantities(state);
+        RigidBodyState derivativeState;
         derivativeState.position = auxilaries.linearVelocity;
         derivativeState.rotation = Matrix::star(auxilaries.angularVelocity) * state.rotation;
-        derivativeState.angularMomentum = force;
-        derivativeState.linearMomentum = torque;
+        derivativeState.angularMomentum = forceAndTorque.force;
+        derivativeState.linearMomentum = forceAndTorque.torque;
+        return derivativeState;
     }
 };
 

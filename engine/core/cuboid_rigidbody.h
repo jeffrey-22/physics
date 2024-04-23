@@ -7,10 +7,15 @@ class CuboidRigidBody : RigidBody{
 public:
     double length, width, height;
 
+    CuboidRigidBody(double mass = 1, double length = 1, double width = 1, double height = 1, Vector initialPosition = ORIGIN, 
+    Matrix initialRotation = IDENTITY, Vector initialLinearMomentum = ORIGIN, Vector initialAngularMomentum = ORIGIN)
+        : RigidBody(mass, computeBodySpaceInertiaTensor(mass, length, width, height),
+            initialPosition, initialRotation, initialLinearMomentum, initialAngularMomentum),
+            length(length), width(width), height(height) {}
 private:
-    void computeBodySpaceInertiaTensor() {
+    static Matrix computeBodySpaceInertiaTensor(double mass, double length, double width, double height) {
         double lengthSqr = length * length, widthSqr = width * width, heightSqr = height * height;
-        bodySpaceInertiaTensor = Matrix(widthSqr + heightSqr, lengthSqr + heightSqr, lengthSqr + widthSqr) * (mass / 12.0);
+        return Matrix(widthSqr + heightSqr, lengthSqr + heightSqr, lengthSqr + widthSqr) * (mass / 12.0);
     }
 };
 
