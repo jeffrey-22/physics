@@ -3,25 +3,52 @@
 \usepackage{lipsum}
 \usepackage{amsmath}
 
+\newcommand{\code}{\texttt}
+
 \begin{document}
 
 \chapter{[Chapter 3] Implementation}
 
-\section{Division}
-
-TBA
-
-\section{Geometry}
-
-\section{Modelling}
-
-\section{dy/dx Solver}
-
-\section{Collision Detection}
-
-\section{Collision Resolution}
-
 \section{Repository Overview}
+
+[Figure of repository structure]
+
+[Figure of modules interaction]
+
+[Figures] describes the structure of the repository. The main engine is put in the engine directory, being self-supportive on its own with encapsulated APIs for setting up experiments. The engine part is fully written in C++, and has its own structure, which will be described in [section XXX]. The rendering part is isolated from the main engine because it mainly uses third-party rendering library - Blender, to render the results provided by the APIs of the physics engine. However, the rendered videos were what I heavily relied on when testing and evaluating the engine. They will be described in [section XXX]. The report directory is for storing writeup files for the project.
+
+\section{Engine}
+
+As a reminder, the physics engine mainly involves first modelling objects as rigid bodies, then uses a collision detection-resolution feedback loop for simulation. In the repository, these core mechanics are in the core directory. I used a geometry directory to provide utilities for computational geometry. The core directory includes 
+
+\subsection{Geometry}
+
+For better customizability I implemented my own geometry modules. Since the whole engine operates in 3D in every way, I could use just two classes, \code{Vector} and \code{Matrix}, in order to represent $3 \times 1$ and $3 \times 3$ tensors respectively. Some common operators are also supported for quick C++ style syntax. Some of the interfaces include
+
+\begin{itemize}
+\item \code{static Matrix star(const Vector\& v)}: the star operation that creates a matrix $A=a^*$ for any vector $a$ such that $A \cdot b = a\times b$.
+\item \code{Matrix inverse()}: finding the inverse of a matrix
+\item \code{Vector operator*(Vector rhs)}: multiplying matrices with vectors
+\end{itemize}
+
+\subsection{Rigid body}
+
+The main class for individual rigid bodies is \code{RigidBody}, with each instance of it representing one unique rigid body. The states and auxilaries are also individually classed as \code{RigidBodyState} and \code{RigidBodyAuxilaries} respectively.
+
+For each rigid body, the main fixed properties are its \code{mass} and \code{bodySpaceInertiaTensor}. \code{CuboidRigidBody} subclasses from \code{RigidBody}, and instead uses \code{length}, \code{width}, and \code{height} to automatically calculate the integral. The subclasses are also responsible for documenting shapes information when outputting.
+
+All the derivatives and computable auxilaries are encapsulated as privated methods like \code{RigidBodyState computeDerivative(RigidBodyState state, RigidBodyForceAndTorque forceAndTorque)}.
+
+\subsection{dy/dx Solver}
+
+
+
+\subsection{Collision Detection}
+
+\subsection{Collision Resolution}
+
+\section{Render}
+
 
 TBA
 
