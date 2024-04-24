@@ -7,6 +7,7 @@ const std::size_t MATRIX_SIZE = 3;
 
 class Matrix {
 public:
+    std::vector<double> data;
     Matrix() : data(MATRIX_SIZE * MATRIX_SIZE, 0.0) {}
 
     Matrix(double diag1, double diag2, double diag3) 
@@ -160,8 +161,6 @@ private:
            double d, double e, double f, 
            double g, double h, double i) 
         : data({a, b, c, d, e, f, g, h, i}) {}
-
-    std::vector<double> data;
 };
 
 #endif // MATRIX_H

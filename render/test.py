@@ -39,86 +39,100 @@ camera_location = (center[0], center[1] + distance, center[2])
 # Set the camera's look at position (center of the bounding box)
 look_at_position = center
 
-# Set the camera's rotation
-rotation_euler = (math.radians(-90), 0, 0)
-# Define rotation matrices for each frame
-# Replace these with your actual rotation matrices
-rotation_matrices = [
-    np.array([[0, 1, 0],
-              [-1, 0, 0],
-              [0, 0, 1]]),
-    np.array([[1, 0, 0],
-              [0, 1, 0],
-              [0, 0, 1]]),
-    np.array([[0, 0, 1],
-              [0, 1, 0],
-              [-1, 0, 0]])
-]
-
 # Delete existing objects in the scene
 bpy.ops.object.select_all(action='DESELECT')
 bpy.ops.object.select_by_type(type='MESH')
 bpy.ops.object.delete()
 
-# Create a cuboid and add it to the scene
-bpy.ops.mesh.primitive_cube_add(size=1, location=location)
-cuboid = bpy.context.object
-cuboid.scale = (length/2, width/2, height/2)  # Set the size of the cuboid
+maxframe = 1
 
-# Set up keyframes for the cuboid's location and rotation
-location_action = bpy.data.actions.new(name="LocationAction")
-rotation_action = bpy.data.actions.new(name="RotationAction")
-animation_data = cuboid.animation_data_create()
-animation_data.action = location_action
-
-rotation_track = cuboid.animation_data.nla_tracks.new()
-rotation_track.name = "RotationTrack"
-rotation_strip = rotation_track.strips.new(name="RotationStrip", action=rotation_action, start=1)
-rotation_strip.frame_start = 1  # Specify the frame start
-
-# Set up F-Curves for X, Y, and Z location channels
-for i in range(3):
-    location_action.fcurves.new("location", index=i)
-
-# Set up F-Curves for rotation quaternion
-cuboid.rotation_mode = 'QUATERNION'
-for i in range(4):
-    rotation_action.fcurves.new("rotation_quaternion", index=i)
-
-# Insert keyframes for the location and rotation
-for i in range(len(coordinates)):
-    frame = i * 30  # Adjust this to set the frame rate
-    location = coordinates[i]
-    rotation_matrix = rotation_matrices[i]
-    
-    # Update cuboid's location
-    cuboid.location = location
-    for j in range(3):
-        fcurve = location_action.fcurves.find('location', index=j)
-        fcurve.keyframe_points.insert(frame, value=cuboid.location[j])
-    
-    # Convert rotation matrix to quaternion
-    rotation = R.from_matrix(rotation_matrix)
-    rotation_quaternion = rotation.as_quat()
-    
-    # Update cuboid's rotation
-    cuboid.rotation_quaternion = rotation_quaternion
-    for j in range(4):
-        fcurve = rotation_action.fcurves.find('rotation_quaternion', index=j)
-        fcurve.keyframe_points.insert(frame, value=rotation_quaternion[j])
-
-# Set interpolation to linear for smooth motion
-for fcurve in location_action.fcurves:
-    for keyframe in fcurve.keyframe_points:
-        keyframe.interpolation = 'LINEAR'
+with open('output', 'r') as datafile:
+    # Read the entire file content
+    content = datafile.readlines()
+    ii = 0
+    while ii < len(content):
+        content[ii] = content[ii][:-2]
+        info = content[ii].split(' ')
+        info = [float(word) for word in info]
+        type_of_mesh = int(info[0])
+        if type_of_mesh == 0:
+            settings_of_mesh = info[1:4]
+        num = int(info[-1])
+        data = []
+        for _ in range(num):
+            ii += 1
+            content[ii] = content[ii][:-2]
+            lst = [float(w) for w in content[ii].split(' ')]
+            data1 = int(lst[0] * 30 + 0.5)
+            data2 = (lst[1], lst[2], lst[3])
+            data3 = [[lst[4], lst[5], lst[6]], [lst[7], lst[8], lst[9]], [lst[10], lst[11], lst[12]]]
+            data.append((data1, data2, data3))
+        ii += 1
         
-for fcurve in rotation_action.fcurves:
-    for keyframe in fcurve.keyframe_points:
-        keyframe.interpolation = 'LINEAR'
+        if type_of_mesh == 0:
+            # Create a cuboid and add it to the scene
+            bpy.ops.mesh.primitive_cube_add(size=1, location=data[0][1])
+            cuboid = bpy.context.object
+            length = settings_of_mesh[0]
+            width = settings_of_mesh[1]
+            height = settings_of_mesh[2]
+            cuboid.scale = (length/2, width/2, height/2)  # Set the size of the cuboid
+
+            # Set up keyframes for the cuboid's location and rotation
+            location_action = bpy.data.actions.new(name="LocationAction")
+            rotation_action = bpy.data.actions.new(name="RotationAction")
+            animation_data = cuboid.animation_data_create()
+            animation_data.action = location_action
+
+            rotation_track = cuboid.animation_data.nla_tracks.new()
+            rotation_track.name = "RotationTrack"
+            rotation_strip = rotation_track.strips.new(name="RotationStrip", action=rotation_action, start=1)
+            rotation_strip.frame_start = 1  # Specify the frame start
+
+            # Set up F-Curves for X, Y, and Z location channels
+            for i in range(3):
+                location_action.fcurves.new("location", index=i)
+
+            # Set up F-Curves for rotation quaternion
+            cuboid.rotation_mode = 'QUATERNION'
+            for i in range(4):
+                rotation_action.fcurves.new("rotation_quaternion", index=i)
+
+            # Insert keyframes for the location and rotation
+            for i in range(len(data)):
+                frame = data[i][0]  # Adjust this to set the frame rate
+                maxframe = max(frame, maxframe)
+                location = data[i][1]
+                rotation_matrix = data[i][2]
+                
+                # Update cuboid's location
+                cuboid.location = location
+                for j in range(3):
+                    fcurve = location_action.fcurves.find('location', index=j)
+                    fcurve.keyframe_points.insert(frame, value=cuboid.location[j])
+                
+                # Convert rotation matrix to quaternion
+                rotation = R.from_matrix(rotation_matrix)
+                rotation_quaternion = rotation.as_quat()
+                
+                # Update cuboid's rotation
+                cuboid.rotation_quaternion = rotation_quaternion
+                for j in range(4):
+                    fcurve = rotation_action.fcurves.find('rotation_quaternion', index=j)
+                    fcurve.keyframe_points.insert(frame, value=rotation_quaternion[j])
+
+            # Set interpolation to linear for smooth motion
+            for fcurve in location_action.fcurves:
+                for keyframe in fcurve.keyframe_points:
+                    keyframe.interpolation = 'LINEAR'
+                    
+            for fcurve in rotation_action.fcurves:
+                for keyframe in fcurve.keyframe_points:
+                    keyframe.interpolation = 'LINEAR'
 
 # Optionally, you can adjust the frame range
 bpy.context.scene.frame_start = 1
-bpy.context.scene.frame_end = len(coordinates) * 30
+bpy.context.scene.frame_end = maxframe
 
 # Render the animation
 bpy.ops.render.render(animation=True, write_still=False)

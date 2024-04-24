@@ -1,1 +1,0 @@
-g++ test.cpp engine.cpp collision_detection.cpp collision_resolution.cpp ../geometry/*.h *.h -o test

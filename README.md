@@ -19,3 +19,5 @@ p(t) = R(t)p0 + x(t)
   https://www.youtube.com/watch?v=-_IspRG548E
 
   https://www.cs.cmu.edu/~baraff/sigcourse/
+
+  Eigen

@@ -3,7 +3,7 @@
 
 #include "rigidbody.h"
 
-class CuboidRigidBody : RigidBody{
+class CuboidRigidBody : public RigidBody{
 public:
     double length, width, height;
 
@@ -11,7 +11,9 @@ public:
     Matrix initialRotation = IDENTITY, Vector initialLinearMomentum = ORIGIN, Vector initialAngularMomentum = ORIGIN)
         : RigidBody(mass, computeBodySpaceInertiaTensor(mass, length, width, height),
             initialPosition, initialRotation, initialLinearMomentum, initialAngularMomentum),
-            length(length), width(width), height(height) {}
+            length(length), width(width), height(height) {
+                setConfigurations(0.0, length, width, height);
+            }
 private:
     static Matrix computeBodySpaceInertiaTensor(double mass, double length, double width, double height) {
         double lengthSqr = length * length, widthSqr = width * width, heightSqr = height * height;

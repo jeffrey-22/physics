@@ -25,16 +25,33 @@ class RigidBody {
 public:
     double mass;
     Matrix bodySpaceInertiaTensor;
+    std::vector<double> configurations;
     
-    RigidBodyState state, derivativeState;
-
-    RigidBodyAuxilaries auxilaries;
+    std::vector<std::pair<double, RigidBodyState>> states;
     
     RigidBody(double mass, const Matrix& bodySpaceInertiaTensor, Vector initialPosition = ORIGIN, 
     Matrix initialRotation = IDENTITY, Vector initialLinearMomentum = ORIGIN, Vector initialAngularMomentum = ORIGIN)
         : mass(mass), bodySpaceInertiaTensor(bodySpaceInertiaTensor) {
-
+            RigidBodyState initialState;
+            initialState.position = initialPosition;
+            initialState.rotation = initialRotation;
+            initialState.linearMomentum = initialLinearMomentum;
+            initialState.angularMomentum = initialAngularMomentum;
+            states = {std::make_pair(0, initialState)};
         }
+    template<typename... Args>
+    void setConfigurations(Args... args) {
+        configurations = {args...};
+    }
+    const std::vector<double>& getConfigurations() const {
+        return configurations;
+    }
+    const std::vector<std::pair<double, RigidBodyState>>& getStates() const {
+        return states;
+    }
+    void appendState(double time, RigidBodyState newState) {
+        states.emplace_back(std::make_pair(time, newState));
+    }
 private:
     RigidBodyAuxilaries computeAuxilaryQuantities(RigidBodyState state) {
         RigidBodyAuxilaries auxilaries;
