@@ -26,6 +26,11 @@ public:
     double mass;
     Matrix bodySpaceInertiaTensor;
     std::vector<double> configurations;
+    std::vector<Vector> vertices;
+    std::vector<Edge> edges;
+    std::vector<Face> faces;
+
+    RigidBodyForceAndTorque forceAndTorque;
     
     std::vector<std::pair<double, RigidBodyState>> states;
     
@@ -46,20 +51,14 @@ public:
     const std::vector<double>& getConfigurations() const {
         return configurations;
     }
+    RigidBodyForceAndTorque getForceAndTorque() const {
+        return forceAndTorque;
+    }
     const std::vector<std::pair<double, RigidBodyState>>& getStates() const {
         return states;
     }
     void appendState(double time, RigidBodyState newState) {
         states.emplace_back(std::make_pair(time, newState));
-    }
-private:
-    RigidBodyAuxilaries computeAuxilaryQuantities(RigidBodyState state) {
-        RigidBodyAuxilaries auxilaries;
-        auxilaries.invMass = 1.0 / mass;
-        auxilaries.linearVelocity = state.linearMomentum * auxilaries.invMass;
-        auxilaries.inertia = state.rotation * bodySpaceInertiaTensor * state.rotation.inverse();
-        auxilaries.angularVelocity = auxilaries.inertia.inverse() * state.angularMomentum;
-        return auxilaries;
     }
     RigidBodyState computeDerivative(RigidBodyState state, RigidBodyForceAndTorque forceAndTorque) {
         RigidBodyAuxilaries auxilaries;
@@ -70,6 +69,15 @@ private:
         derivativeState.angularMomentum = forceAndTorque.force;
         derivativeState.linearMomentum = forceAndTorque.torque;
         return derivativeState;
+    }
+private:
+    RigidBodyAuxilaries computeAuxilaryQuantities(RigidBodyState state) {
+        RigidBodyAuxilaries auxilaries;
+        auxilaries.invMass = 1.0 / mass;
+        auxilaries.linearVelocity = state.linearMomentum * auxilaries.invMass;
+        auxilaries.inertia = state.rotation * bodySpaceInertiaTensor * state.rotation.inverse();
+        auxilaries.angularVelocity = auxilaries.inertia.inverse() * state.angularMomentum;
+        return auxilaries;
     }
 };
 

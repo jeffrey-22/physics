@@ -27,6 +27,18 @@ public:
             }
         }
     }
+    void advanceByTimeFrameUnderConstantForce(double dt, RigidBodyForceAndTorque forceAndTorque) {
+        for (auto body : bodies) {
+            auto states = body.getStates();
+            auto [time, state] = states.back();
+            auto stateDerivative = body.computeDerivative(state, forceAndTorque);
+            stateDerivative.angularMomentum = stateDerivative.angularMomentum * dt + state.angularMomentum;
+            stateDerivative.linearMomentum = stateDerivative.linearMomentum * dt + state.linearMomentum;
+            stateDerivative.position = stateDerivative.position * dt + state.position;
+            stateDerivative.rotation = stateDerivative.rotation * dt + state.rotation;
+            states.emplace_back(std::make_pair(time + dt, stateDerivative));
+        }
+    }
 private:
 
 };

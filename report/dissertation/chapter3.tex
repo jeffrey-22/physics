@@ -5,6 +5,30 @@
 
 \newcommand{\code}{\texttt}
 
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=CPP,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
 \begin{document}
 
 \chapter{[Chapter 3] Implementation}
@@ -35,22 +59,159 @@ For better customizability I implemented my own geometry modules. Since the whol
 
 The main class for individual rigid bodies is \code{RigidBody}, with each instance of it representing one unique rigid body. The states and auxilaries are also individually classed as \code{RigidBodyState} and \code{RigidBodyAuxilaries} respectively.
 
-For each rigid body, the main fixed properties are its \code{mass} and \code{bodySpaceInertiaTensor}. \code{CuboidRigidBody} subclasses from \code{RigidBody}, and instead uses \code{length}, \code{width}, and \code{height} to automatically calculate the integral. The subclasses are also responsible for documenting shapes information when outputting.
+For each rigid body, the main fixed properties are its \code{mass} and \code{bodySpaceInertiaTensor}. I also implemented a prepared \code{CuboidRigidBody} that subclasses from \code{RigidBody}, and instead uses \code{length}, \code{width}, and \code{height} to automatically calculate the integral. The subclasses are also responsible for documenting shapes information when outputting.
 
-All the derivatives and computable auxilaries are encapsulated as privated methods like \code{RigidBodyState computeDerivative(RigidBodyState state, RigidBodyForceAndTorque forceAndTorque)}.
+In order to implement the later edge-edge or vertex-face collision detection, the collection of vertices, edges and faces are also saved and managed by the subclasses.
 
-\subsection{dy/dx Solver}
+All the derivatives and computable auxilaries are encapsulated as methods like 
 
+\begin{lstlisting}
+RigidBodyState computeDerivative(RigidBodyState state, 
+RigidBodyForceAndTorque forceAndTorque)
+\end{lstlisting}
 
+\subsection{Ordinary Differential Equations}
+
+Earlier in [section XXX], the state of a rigid body, $S$, and its derivative with regards to time $t$, $\frac{d}{dt}S$, are defined with variables from states $S$ together with outside force and torque. Force and torque are assumed to be known ahead of time (they are usually a constant, for example, gravity constantly pulls everything downwards, or other user-defined constant force fields), but they also might change depending on the result of collision resolution. They can be treated as a known function of time, say $f(t)$. The derivative depends on the force and torque and the current state, so it can be treated as a known function of both of them, say $g(S, f(t))$. This helps establishing a differential equation for predicting the next states
+
+\begin{equation}
+\frac{d}{dt}S = g(S, f(t))
+\end{equation}
+
+which can now be processed as an ordinary differential equation (ODE), where the states at the current time frame $t_0$ are given, and the equation is used to find the states at the next time frame $t_0 + dt$.
+
+I decided to use a naive approximation (known as Euler's method) by assuming the derivative remains constant across the duration of the small time frame $dt$. That is, I derived the derivative at $t_0$ as $\frac{d}{dt}S=g(S, f(t_0))$, and advance the state $S$ by simply adding $dt \cdot \frac{d}{dt}S$ to the state $S$. This in fact works very well already, considering most of my experiments expand over several seconds, so it turns out to be very difficult if not impossible for humans to notice the tiny discrepancies. It is also possible to divide to time steps even more, and with smaller steps (smaller $dt$) the accuracy will be improved even further.
+
+There are in fact more precise simulations using an actual ODE solver. For example, there are known ODE solvers such as the Boost.ODEInt library that deploys more complicated algorithms such as fourth-order Runge-Kutta method to integrate the ODE. However, these are not considered in this project considering the original goal of the project is the ability to simulate rather than the ability to accurately approximate things. Of course, they are interesting candidates to consider as future improvement.
+
+\subsection{Unconstrained Simulation}
+
+Given the rigid bodies and simulation basics, the actual state advancement is as simple as going through all bodies recorded in the engine:
+
+\begin{lstlisting}
+void advanceByTimeFrameUnderConstantForce(double dt) {
+    for (auto body : bodies) {
+        auto states = body.getStates();
+        auto [time, state] = states.back();
+        auto stateDerivative = body.computeDerivative(state, body.getForceAndTorque());
+        states.emplace_back(std::make_pair(time + dt, state + stateDerivative * dt));
+    }
+}
+\end{lstlisting}
+
+All the state history along with timing information is recorded and saved in a \code{std::vector} in time order. This is helpful when we need to unroll the states to a previous time frame due to collision detection.
 
 \subsection{Collision Detection}
 
+This stage turns out to be one of the trickier modules to implement. I implemented them directly as methods of the main \code{PhysicsEngine} class. The collision detection has several steps.
+
+\subsubsection{Entry point} 
+Collision detection methods are called immediately after advancing the previous unconstrained simulation. The problem of the previous unconstrained simulation is that it does not consider collision or interactions between rigid bodies in the engine. In fact, what we did is to advance the states no matter what happened, and check if any problems arise afterwards. The idea behind this is that collisions are rare in most scenerios, and it is common that only a couple of collisions happens throughout the experiment. Hence, we could be lazy and check for collision every $10$ steps of regular unconstrained simulation, since checking for collisions are quite resource-intensive. However there is the issue of having objects clip through each other with longer time frames of checking. In practice I called the detection after every regular unconstrained simulation since it is enough for simple experiments.
+
+\subsubsection{Bounding boxes}
+As a preprocessing step, the bounding boxes of all existing rigid bodies are generated. Bounding box is the smallest box that encapsulates the object but is also aligned with the axis, which simplifies computations. [fig] shows an example of a bounding box.
+
+[fig]
+
+If collisions were to occur, the bounding boxes, which represent an even larger space, must collide first. So checking if two bounding boxes overlay is a good precondition for actual collisions, and does a good job of filtering out most of the non-colliding cases.
+
+Checking if any pairs of bounding boxes overlap is much more efficient. Even a naive pairwise check between all pairs of bounding boxes are more efficient because no need to iterate over edges and faces, with a complexity of $O(n^2)$ where $n$ is the number of rigid bodies. But it can be solved more efficiently.
+
+\begin{itemize}
+\item One-dimensional case: Consider what will happen if the bounding boxes are in only one dimension. In that case, the boxes are actually simply segments. Let's say the $i$-th segment covers $l_i$ to $r_i$, and we are tasked with finding all the overlapping pairs quickly, where there are $n$ segments at the beginning, and at most $m$ pairs overlap.
+
+[fig]
+
+This problem can be solved in $O(n \log n + m)$ time with a sweep line algorithm. First, all the endpoints ($l_i$ and $r_i$, a total of $2n$ endpoints) will be sorted from left to right. Then a sweep is performed from left to right, while keeping a list of which segments are active. When we get a left endpoint $l_i$, the segment is marked as active, and it will be paired with all other active segments. When we get a right endpoint $r_i$, the corresponding segment is removed from the active list. The list needs to support quick insertions and deletions, so a doubly linked list for example would suffice. The initial sorting costs $O(n\log n)$, the sweep costs $O(n)$, going through the pairs costs $O(m)$, adding to a cost of $O(n\log n + m)$, and is the most efficient algorithm for solving this problem.
+
+After solving this initial problem at the first time frame, the subsequent problems for later time frames can be slightly improved based on the assumption that they do not greatly deviate from the original problem. The bottleneck in the algorithm is the sorting of the endpoints. We could use the idea of insertion sort here - for each endpoint, check if it is to the right of the previous endpoint, and if not swap its position with the previous endpoint. Now the complexity becomes $O(n + s)$ where $s$ is the number of swaps. Although in the worst case scenerio $s$ could be as high as $O(n^2)$, we could expect $s$ to be low on average. After re-sorting all the endpoints, the sweep step could continue as before, yielding $O(n + m + s)$ in total.
+
+But we could even do better, by not performing the sweep step at all! Let's assume the whole list of overlapping segments is recorded. Consider when a pair of segments, $i$ and $j$, change from overlapping to not overlapping. Then, the relative order of the four endpoints $l_i$, $r_i$, $l_j$, $r_j$ must have changed. So when doing the pesudo insertion sort, two of those four values must have swapping places with another when adjacent. Same goes when $i$ and $j$ change from not overlapping to overlapping. Therefore, whenever we perform a swap, we should re-check the overlapping status of the pair of underlying segments have changed. Now we successfully eleminated the need for sweeping phase, yielding a total complexity of $O(n + s)$.
+
+\item Three-dimensional case: Now going back to our 3D bounding boxes. There are efficient algorithm with advanced data structures that solve the one-time problem in $O(n\log n + m)$ as well. A general result is for $d$ dimensions the overlapping pairs can be found in $O(n \log ^ {\max(1, d - 2)} n + m)$.
+
+For subsequent steps, a similar optimization could be used. This time, the boxes have three sets of segments: $xl_i, xr_i, yl_i, yr_i, zl_i, zr_i$. Thankfully checking whether two bounding boxes overlap is still $O(1)$. So similarly, consider when a pair of boxes, $i$ and $j$, change from overlapping to not overlapping or vice versa. The relative order of four endpoints on at least one axis must have changed. Therefore, if we simply maintain three sorted lists of each dimension, and perform a pesudo insertion sort for each of them with re-checking if pairs of bounding boxes still overlap, the whole list of overlapping bounding boxes is still maintained at a manageable $O(n + s)$ complexity.
+\end{itemize}
+
+\subsubsection{Collision}
+
+Collisions are only further checked on overlapping bounding boxes. Each collision is recorded as a class:
+
+\begin{lstlisting}
+class Collision {
+    RigidBody *a, *b;
+    Vector normal;
+};
+class FaceVertexCollision : public Collision {
+    Face face;
+    Vector vertex;
+};
+class EdgeEdgeCollision : public Collision {
+    Edge ea, eb;
+};
+\end{lstlisting}
+
+The two types of collisions are both accounted for. Degenerated cases like vertex-vertex collision will be described with the more general collision case. For face-vertex collison, I force \code{RigidBody *a} to be the body with the face and \code{RigidBody *b} to be the body with the vertex. The \code{Vector normal} describes the normal vector of the separating plane at the point of collision, which is either the face for face-vertex collision or the cross product of the two edges in the edge-edge collision case. All the coordinates here should use the world space coordinates. The process of collision checking is as simple as going through all possible pairs of faces-vertices and edges-edges, and checking if they have penetrated. 
+
+The test for penetration is done by simply testing the relative velocity defined previously, $v_{AB}$, against some constant threshold.
+
+There are also optimization possibilties here. For example, it is possible to cache the history of collisions between a specific pair of rigid bodies. Therefore, when checking for a new collision, we could first check if previous collision setups work, say if the same pairs of edges could separate them apart. If the check fails, we can first try to replace them with adjacent faces or edges, hoping that it only barely rotated. Currently these ideas are left as possible future improvements.
+
+\subsubsection{Finding the time of collision}
+
+Binary search could be used to find the exact time the collision takes place, assuming one already happens. If there are multiple pairs of collisions with the time frame $t_0$ to $t_0 + dt$, we are interested in finding the one that occurs first.
+
+The idea of the binary search is to first fix the possible range, in this case the range $t_0$ to $t_0 + dt$. Previously we have discussed how to efficiently check if a collision happened at any time frame $t$. Therefore, the midpoint of the range can be queried to narrow down the possible range, up until a desired precision:
+
+\begin{lstlisting}
+left = t0;
+right = t0 + dt;
+eps = 1e-5;
+while (right - left > eps) {
+    middle = (left + right) / 2.0;
+    engine.advanceByTimeFrameUnderConstantForce(middle - left);
+    if (engine.checkCollision())
+        right = middle;
+    else
+        left = middle;
+    engine.rollBack();
+}
+\end{lstlisting}
+
+This gives a complexity of $O((n + s) \cdot \log \frac{dt}{eps})$.
+
 \subsection{Collision Resolution}
+
+Most of the computations are already given in the previous section [section XXX]. Here, we just plug in the computations for the relevant quantities. In the code, it can be encapsulated as a simple method \code{resolveCollision(Collision *c, double coefficientOfResititution)}, where the collision is resolved by supplying the collision and the coefficient of resititution. 
+In the actual implementation I chose a default value for the coefficient as $\epsilon = 0.5$. 
+
+Now, after correcting the states of all rigid bodies, the states will be saved as a special time frame, and the simulation will resume in a physically correct manner.
 
 \section{Render}
 
+Strictly speaking the rendering step is out of the scope of the actual project here, because the users could just invoke the APIs of the core engine and get whatever data they would like to collect. However, it has ultimately become an important step of the project with the need to perform experiments and visualize simple simulations. This is also where a lot of trouble shows up for my project which ultimately stems from my poor knowledge of rendering libraries prior to this project.
 
-TBA
+\subsection{Motivation}
+
+I chose Blender because it is known as a very popular 3D rendering program. It turns out that it is popular for being friendly to people with little programming knowledge, with a good UI, but not particularly great for dumping external data in for it to render whatever I want. It seems that the only relevant functionality for this purpose is to use the Blender python scripting API, which, while has some documentations and some powers, aren't as well-studies as other functionalities of Blender, since it is still under active development and refinement. In fact, the documentation just updated to 4.1 [ref] within the duration of the project from 4.0.
+
+\subsection{Native python scripting}
+
+Blender scripting works with a custom module provided by Blender as the rendering module. However, it does not work like other common, distributed modules like matplotlib - the module is provided in a native python version inside Blender, hidden in the source directory.
+
+In order to use it, most of the rendering related scripts have to be built on top of this native environment, which cannot be easily manipulated as common python distributions. For example, installing new libraries like scipy need to be done directly with the pip installer on the native python environment.
+
+I ended up using a setup script to deal with all the nuances by directly specifying the \code{\%BLENDERPATH\%}, include the python in the \code{\%PATH\%} together with libraries installations, and then return to the current directory for running the script.
+
+\subsection{Rendering process}
+
+It took me some time to learn how to setup the rendering stage. First, the camera needs to be setup with an appropriate bounding box. Then, remove all existing objects in the stage, because for some reason some of the objects could persist to the next run. With each rigid body, create a separate mesh for them, add animation data for them, and interpolate the animation with the key data at each time frame from our simulation data. Finally, setup the rendering options and render the animation to a video.
+
+There are also many details regarding each animation data. For example, the rotation used by Blender is the quanternion one. Quanternion functions as an alternative to the matrix form of rotation. Luckily \code{scipy.spatial.transform} provided translations between matrix form and quanternion form.
+
+\subsection{Pipeline}
+
+Finally, I created a way to pipe the data the engine outputs to be directly used by the blender python script. I used C++ code to setup the experiment, build it with cmake and makefile, which should automatically dump the data into the rendering directory. Then I head into the rendering directory and use my setup script to render the result as a video. It turns out the rendering could take a very long time, for reference a 10 second video ends up renderng for 10 minutes. To adapt to this I tried to work with small and simple experiment setups to perform some quick testings.
 
 \noindent\rule{12cm}{0.4pt}
 
@@ -62,9 +223,6 @@ content filling
 
 figures
 
-*World space* refers to the main space where physics is simulated. For particles, their *states* can be simply described as its location, or more precisely, by a 3-element vector inscribing their coordinates in the three axis. A rigid body however may be rotated in addition to translation, which would require an additional 3x3 matrix, $R$, in its state. For a rigid body, we consider its *center of mass* (will elaborate later) as the centre, and different locations on the rigid body can be described with the *body space* locations relative to the centre. Let's call the body space location $loc_{body}$ and the world space location $loc_{world}$, then we can imagine the point being rotated around the centre of mass (at location $loc_{centre}$) using rotation matrix $R$ as the equation
-
-
 This chapter should describe what was actually produced: the programs which were written, the hardware which was built or the theory which was developed. Any design strategies that looked ahead to the testing stage should be described in order to demonstrate a professional approach was taken.
 
 Descriptions of programs may include fragments of high-level code but large chunks of code are usually best left to appendices or omitted altogether. Analogous advice applies to circuit diagrams or detailed steps in a machine-checked proof.
@@ -72,7 +230,5 @@ Descriptions of programs may include fragments of high-level code but large chun
 The implementation chapter should include a section labelled "Repository Overview". The repository overview should be around one page in length and should describe the high-level structure of the source code found in your source code repository. It should describe whether the code was written from scratch or if it built on an existing project or tutorial. Making effective use of powerful tools and pre-existing code is often laudable, and will count to your credit if properly reported. Nevertheless, as in the rest of the dissertation, it is essential to draw attention to the parts of the work which are not your own. 
 
 It should not be necessary to give a day-by-day account of the progress of the work but major milestones may sometimes be highlighted with advantage.
-
-$loc_{world} = R \times loc_{body} + loc_{centre}$
 
 \end{document}
