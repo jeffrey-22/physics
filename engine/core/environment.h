@@ -2,6 +2,7 @@
 #define ENVIRONMENT_H
 
 #include "../geometry/matrix.h"
+#include <tuple>
 
 const Vector ORIGIN(0, 0, 0);
 const Matrix IDENTITY(1, 1, 1);
@@ -9,18 +10,6 @@ const Matrix IDENTITY(1, 1, 1);
 typedef std::tuple<Vector, Vector, Vector> Face;
 typedef std::pair<Vector, Vector> Edge;
 typedef Vector Vertex;
-
-struct FaceVertexCollision : public Collision {
-    Face face;
-    Vector vertex;
-};
-struct EdgeEdgeCollision : public Collision {
-    Edge ea, eb;
-};
-struct Collision {
-    RigidBody *a, *b;
-    Vector normal, p;
-};
 
 struct RigidBodyState {
 public:
@@ -40,23 +29,23 @@ public:
     Vector force, torque;
 };
 
-Vector toWorldSpaceCoordinates(Vector bodySpaceCoordinates, RigidBodyState& state) {
+static Vector toWorldSpaceCoordinates(Vector bodySpaceCoordinates, RigidBodyState& state) {
     return state.position + state.rotation * bodySpaceCoordinates;
 }
-Edge toWorldSpaceCoordinates(Edge bodySpaceCoordinates, RigidBodyState& state) {
+static Edge toWorldSpaceCoordinates(Edge bodySpaceCoordinates, RigidBodyState& state) {
     return std::make_pair(toWorldSpaceCoordinates(bodySpaceCoordinates.first, state), 
     toWorldSpaceCoordinates(bodySpaceCoordinates.second, state));
 }
-Face toWorldSpaceCoordinates(Face bodySpaceCoordinates, RigidBodyState& state) {
+static Face toWorldSpaceCoordinates(Face bodySpaceCoordinates, RigidBodyState& state) {
     auto [a, b, c] = bodySpaceCoordinates;
     return std::make_tuple(toWorldSpaceCoordinates(a, state), 
     toWorldSpaceCoordinates(b, state),
     toWorldSpaceCoordinates(c, state));
 }
-Vector toBodySpaceCoordinates(Vector worldSpaceCoordinates, RigidBodyState& state) {
+static Vector toBodySpaceCoordinates(Vector worldSpaceCoordinates, RigidBodyState& state) {
     return state.rotation.inverse() * (worldSpaceCoordinates - state.position);
 }
-Vector computeFaceNormal(const Face& face) {
+static Vector computeFaceNormal(const Face& face) {
     Vector p1, p2, p3;
     std::tie(p1, p2, p3) = face;
 

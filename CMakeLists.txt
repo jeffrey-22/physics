@@ -9,8 +9,23 @@ project(physics)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# Add Eigen include directory
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/eigen)
+set(SOURCES
+    engine/core/test.cpp
+    engine/core/collision_detection.cpp
+    engine/core/collision_resolution.cpp
+    engine/core/engine.cpp
+    # Add more source files here if needed
+)
 
-# Add executable
-add_executable(test engine/core/test.cpp)
+# Add header files
+set(HEADERS
+    engine/core/cuboid_rigidbody.h
+    engine/core/environment.h
+    engine/core/rigidbody.h
+    engine/geometry/matrix.h
+    engine/geometry/vector.h
+    # Add more header files here if needed
+)
+
+# Add the executable
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})

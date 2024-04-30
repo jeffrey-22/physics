@@ -1,6 +1,5 @@
 #include "environment.h"
-#include "rigidbody.h"
-
+#include "collision_detection.cpp"
 
 class CollisionResolution {
 public:
@@ -18,13 +17,9 @@ public:
         double t4 = n.dot((c->b->getInverseInertia(c->b->getLatestState()) * rb.cross(n)).cross(rb));
         double j = nu / (t1 + t2 + t3 + t4);
         Vector f = n * j;
-        Vector& vec = c->a->getLatestState().linearMomentum;
-        vec = vec + f;
-        Vector& vec = c->b->getLatestState().linearMomentum;
-        vec = vec - f;
-        Vector& vec = c->a->getLatestState().angularMomentum;
-        vec = vec + ra.cross(f);
-        Vector& vec = c->b->getLatestState().angularMomentum;
-        vec = vec - rb.cross(f);
+        c->a->getLatestState().linearMomentum = c->a->getLatestState().linearMomentum + f;
+        c->b->getLatestState().linearMomentum = c->b->getLatestState().linearMomentum - f;
+        c->a->getLatestState().angularMomentum = c->a->getLatestState().angularMomentum + ra.cross(f);
+        c->b->getLatestState().angularMomentum = c->b->getLatestState().angularMomentum - rb.cross(f);
     }
 };

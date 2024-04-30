@@ -1,6 +1,18 @@
 #include "environment.h"
 #include "rigidbody.h"
 
+struct Collision {
+    RigidBody *a, *b;
+    Vector normal, p;
+};
+struct FaceVertexCollision : public Collision {
+    Face face;
+    Vector vertex;
+};
+struct EdgeEdgeCollision : public Collision {
+    Edge ea, eb;
+};
+
 class CollisionDetection {
 public:
     static bool bruteForceCheckCollisionForOnePair(RigidBody *a, RigidBody *b, Collision* c = nullptr) {
