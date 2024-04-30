@@ -3,24 +3,6 @@
 
 #include "environment.h"
 
-class RigidBodyState {
-public:
-    Vector position, linearMomentum, angularMomentum;
-    Matrix rotation;
-};
-
-class RigidBodyAuxilaries {
-public:
-    Vector linearVelocity, angularVelocity;
-    Matrix inertia;
-    double invMass;
-};
-
-class RigidBodyForceAndTorque {
-public:
-    Vector force, torque;
-};
-
 class RigidBody {
 public:
     double mass;
@@ -54,8 +36,23 @@ public:
     RigidBodyForceAndTorque getForceAndTorque() const {
         return forceAndTorque;
     }
+    const double& getMass() const {
+        return mass;
+    }
+    const std::vector<Vector>& getVertices() const {
+        return vertices;
+    }
+    const std::vector<Edge>& getEdges() const {
+        return edges;
+    }
+    const std::vector<Face>& getFaces() const {
+        return faces;
+    }
     const std::vector<std::pair<double, RigidBodyState>>& getStates() const {
         return states;
+    }
+    Matrix getInverseInertia(RigidBodyState state) const {
+        return state.rotation * bodySpaceInertiaTensor * state.rotation.inverse();
     }
     void appendState(double time, RigidBodyState newState) {
         states.emplace_back(std::make_pair(time, newState));
@@ -70,8 +67,15 @@ public:
         derivativeState.linearMomentum = forceAndTorque.torque;
         return derivativeState;
     }
+    RigidBodyState& getLatestState() {
+        return states.back().second;
+    }
+    Vector computePointVelocity(Vector point, RigidBodyState& state) {
+        RigidBodyAuxilaries auxilaries = computeAuxilaryQuantities(state);
+        return auxilaries.linearVelocity + (auxilaries.angularVelocity.cross(point - state.position));
+    }
 private:
-    RigidBodyAuxilaries computeAuxilaryQuantities(RigidBodyState state) {
+    RigidBodyAuxilaries computeAuxilaryQuantities(RigidBodyState& state) {
         RigidBodyAuxilaries auxilaries;
         auxilaries.invMass = 1.0 / mass;
         auxilaries.linearVelocity = state.linearMomentum * auxilaries.invMass;
