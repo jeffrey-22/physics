@@ -3,17 +3,17 @@
 
 class PhysicsEngine {
 public:
-    std::vector<RigidBody> bodies;
+    std::vector<RigidBody*> bodies;
     double currentTime = 0.0;
-    void addRigidBody(RigidBody body) {
-        bodies.emplace_back(body);
+    void addRigidBody(RigidBody* body) {
+        bodies.push_back(body);
     }
     void dumpAllRecordedData() {
         for (auto body : bodies) {
-            auto configurations = body.getConfigurations();
+            auto configurations = body->getConfigurations();
             for (auto value : configurations)
                 std::cout << value << " ";
-            auto states = body.getStates();
+            auto states = body->getStates();
             std::cout << states.size() << " " << std::endl;
             for (auto [time, state] : states) {
                 std::cout << time << " ";
@@ -29,30 +29,29 @@ public:
     }
     void advanceByTimeFrameUnderConstantForce(double dt) {
         for (auto body : bodies) {
-            auto states = body.getStates();
+            auto states = body->getStates();
             auto [time, state] = states.back();
-            auto stateDerivative = body.computeDerivative(state, body.getForceAndTorque());
+            auto stateDerivative = body->computeDerivative(state, body->getForceAndTorque());
             stateDerivative.angularMomentum = stateDerivative.angularMomentum * dt + state.angularMomentum;
             stateDerivative.linearMomentum = stateDerivative.linearMomentum * dt + state.linearMomentum;
             stateDerivative.position = stateDerivative.position * dt + state.position;
             stateDerivative.rotation = stateDerivative.rotation * dt + state.rotation;
-            states.emplace_back(std::make_pair(time + dt, stateDerivative));
+            body->addState(std::make_pair(time + dt, stateDerivative));
         }
         currentTime += dt;
     }
     void rollBack() {
         for (auto body : bodies) {
-            auto states = body.getStates();
-            states.pop_back();
+            body->rollBack();
         }
-        auto [time, state] = bodies.back().getStates().back();
+        auto [time, state] = bodies.back()->getStates().back();
         currentTime = time;
     }
     int bruteForceCheckCollision(Collision* c = nullptr) {
         int n = bodies.size();
         for (int i = 0; i < n; i++)
             for (int j = i + 1; j < n; j++)
-                if (CollisionDetection::bruteForceCheckCollisionForOnePair(&bodies[i], &bodies[j], c))
+                if (CollisionDetection::bruteForceCheckCollisionForOnePair(bodies[i], bodies[j], c))
                     return 1;
         return 0;
     }

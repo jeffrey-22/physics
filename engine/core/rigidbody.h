@@ -51,6 +51,12 @@ public:
     const std::vector<std::pair<double, RigidBodyState>>& getStates() const {
         return states;
     }
+    void addState(std::pair<double, RigidBodyState> newState) {
+        states.push_back(newState);
+    }
+    void rollBack() {
+        states.pop_back();
+    }
     Matrix getInverseInertia(RigidBodyState state) const {
         return state.rotation * bodySpaceInertiaTensor * state.rotation.inverse();
     }

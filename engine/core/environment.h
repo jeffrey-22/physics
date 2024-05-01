@@ -3,6 +3,7 @@
 
 #include "../geometry/matrix.h"
 #include <tuple>
+#include <assert.h>
 
 const Vector ORIGIN(0, 0, 0);
 const Matrix IDENTITY(1, 1, 1);

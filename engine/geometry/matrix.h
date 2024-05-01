@@ -156,6 +156,13 @@ public:
         return *this;
     }
 
+    
+    friend std::ostream& operator<<(std::ostream& os, Matrix p) {
+        return os << std::endl << "[" << p.data[0] << "," << p.data[1] << "," << p.data[2] << "]" << std::endl
+        << "[" << p.data[3] << "," << p.data[4] << "," << p.data[5] << "]" << std::endl
+        << "[" << p.data[6] << "," << p.data[7] << "," << p.data[8] << "]" << std::endl; 
+    }
+
 private:
     Matrix(double a, double b, double c, 
            double d, double e, double f, 

@@ -46,9 +46,10 @@ bpy.ops.object.delete()
 
 maxframe = 1
 
-with open('output', 'r') as datafile:
+with open('output', 'r', encoding='utf-16') as datafile:
     # Read the entire file content
     content = datafile.readlines()
+    print(content)
     ii = 0
     while ii < len(content):
         content[ii] = content[ii][:-2]
@@ -134,6 +135,7 @@ with open('output', 'r') as datafile:
 bpy.context.scene.frame_start = 1
 bpy.context.scene.frame_end = maxframe
 
+exit()
 # Render the animation
 bpy.ops.render.render(animation=True, write_still=False)
 
