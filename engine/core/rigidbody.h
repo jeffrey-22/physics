@@ -69,8 +69,8 @@ public:
         RigidBodyState derivativeState;
         derivativeState.position = auxilaries.linearVelocity;
         derivativeState.rotation = Matrix::star(auxilaries.angularVelocity) * state.rotation;
-        derivativeState.angularMomentum = forceAndTorque.force;
-        derivativeState.linearMomentum = forceAndTorque.torque;
+        derivativeState.angularMomentum = forceAndTorque.torque;
+        derivativeState.linearMomentum = forceAndTorque.force;
         return derivativeState;
     }
     RigidBodyState& getLatestState() {

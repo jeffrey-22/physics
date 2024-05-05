@@ -49,6 +49,7 @@ public:
     }
     int bruteForceCheckCollision(Collision* c = nullptr) {
         int n = bodies.size();
+        return 0;
         for (int i = 0; i < n; i++)
             for (int j = i + 1; j < n; j++)
                 if (CollisionDetection::bruteForceCheckCollisionForOnePair(bodies[i], bodies[j], c))

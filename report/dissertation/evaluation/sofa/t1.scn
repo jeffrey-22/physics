@@ -1,0 +1,57 @@
+<Node name="root" dt="0.01">
+    <!-- Create a default visual model for visualization -->
+    <VisualStyle displayFlags="showBehaviorModels showCollisionModels showForceFields showInteractionForceFields" />
+
+    <!-- Create the first cube -->
+    <MechanicalObject name="cube1" template="Vec3d" position="0 0 0" />
+    <MeshTopology name="cube1_topology" />
+    <MeshGmshLoader name="loader1" filename="mesh/cube.obj" />
+    <MechanicalObject name="cube1_stiffness" template="Vec3d" />
+    <UniformMass name="cube1_mass" totalmass="1" />
+    <TriangleFEMForceField name="cube1_forcefield" youngModulus="1000" poissonRatio="0.3" />
+
+    <!-- Create the second cube -->
+    <MechanicalObject name="cube2" template="Vec3d" position="2 0 0" />
+    <MeshTopology name="cube2_topology" />
+    <MeshGmshLoader name="loader2" filename="mesh/cube.obj" />
+    <MechanicalObject name="cube2_stiffness" template="Vec3d" />
+    <UniformMass name="cube2_mass" totalmass="1" />
+    <TriangleFEMForceField name="cube2_forcefield" youngModulus="1000" poissonRatio="0.3" />
+
+    <!-- Collision -->
+    <CollisionPipeline name="pipeline" />
+    <CollisionModel name="collision_model" />
+    <BruteForceDetection name="detection" />
+    <LinearSolverConstraintCorrection name="solver" />
+    <CollisionResponse name="response" response="response" />
+
+    <!-- Visualize -->
+    <OglModel name="visual_model" src="@loader1" />
+    <OglModel name="visual_model2" src="@loader2" />
+
+    <!-- Connect components -->
+    <Node name="cube1_node" >
+        <MechanicalObject_link src="@cube1" />
+        <TriangleFEMForceField_link src="@cube1_forcefield" />
+        <UniformMass_link src="@cube1_mass" />
+        <MeshTopology_link src="@cube1_topology" />
+    </Node>
+
+    <Node name="cube2_node" >
+        <MechanicalObject_link src="@cube2" />
+        <TriangleFEMForceField_link src="@cube2_forcefield" />
+        <UniformMass_link src="@cube2_mass" />
+        <MeshTopology_link src="@cube2_topology" />
+    </Node>
+
+    <Node name="collision_node" >
+        <MechanicalObject_link src="@collision_model" />
+        <CollisionPipeline_link src="@pipeline" />
+        <CollisionModel_link src="@collision_model" />
+        <BruteForceDetection_link src="@detection" />
+        <LinearSolverConstraintCorrection_link src="@solver" />
+        <CollisionResponse_link src="@response" />
+    </Node>
+
+    <VisualStyle name="VisualStyle" displayFlags="showBehaviorModels showCollisionModels showForceFields" />
+</Node>

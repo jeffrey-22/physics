@@ -21,3 +21,8 @@ p(t) = R(t)p0 + x(t)
   https://www.cs.cmu.edu/~baraff/sigcourse/
 
   Eigen
+
+  projectchrono.org
+  
+  conda activate chrono
+  conda install -c conda-forge mkl=2020
