@@ -49,7 +49,7 @@ public:
     }
     int bruteForceCheckCollision(Collision* c = nullptr) {
         int n = bodies.size();
-        return 0;
+        return ((bodies[0]->getLatestState().position - bodies[1]->getLatestState().position).dist() < 1);
         for (int i = 0; i < n; i++)
             for (int j = i + 1; j < n; j++)
                 if (CollisionDetection::bruteForceCheckCollisionForOnePair(bodies[i], bodies[j], c))
@@ -88,7 +88,9 @@ public:
             if (bruteForceCheckCollision()) {
                 rollBack();
                 auto c = advanceToFirstCollision(dt);
-                CollisionResolution::resolveCollision(c);
+                // CollisionResolution::resolveCollision(c);
+                for (auto x : bodies)
+                    x->getLatestState().linearMomentum = x->getLatestState().linearMomentum * (-1);
             }
         }
     }

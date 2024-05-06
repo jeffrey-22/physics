@@ -41,7 +41,7 @@ The evaluation of this project is split into three parts: Benchmark selection, Q
 \section{Benchmark selection}
 
 Quantitative evaluations will be largely comparison-based. 
-I will be choosing at least three open-source physics engines that support similar features to compare against.
+I will be choosing two open-source physics engines that support similar features to compare against.
 The following engines have been found as possible candidates:
 
 \begin{table}[h]
@@ -75,18 +75,10 @@ They have then been further narrowed down in consideration of supportability, do
   \begin{tabular}
   {|c|c|}
   \hline 
-  Physics engine                                & Reason???TBA                                                         \\
+  Physics engine                                & Reason???TBA, +screenshots, +brief description on setups                                                         \\
   \hline 
-  Advanced Simulation Library                   & good                                           \\
-  Bullet                                        & bad                                           \\
-  Newton Game Dynamics                          & newtondynamics.com/forum/newton.php                      \\
-  Open Dynamics Engine                          & www.ode.org                                            \\
-  PAL              & www.adrianboeing.com/pal                                \\
   PhysX                                         & www.nvidia.com/en-gb/geforce/technologies/physx        \\
-  Project Chrono~                               & projectchrono.org                                      \\
-  Siconos                                       & nonsmooth.gricad-pages.univ-grenoble-alpes.fr/siconos  \\
   SOFA & www.sofa-framework.org                                 \\
-  Tokamak physics engine                        & github.com/isegal/TokamakPhysics                        \\
   \hline
   \end{tabular}
   }
@@ -108,7 +100,7 @@ Two identical cubes will be placed in a world with no gravity.
 
 Cube A, the one on the left, is located at $(0, 0, 0)$, and is moving along the $+$x direction with a velocity of $\SI{1}{\m\per\s}$.
 
-Cube B, the one on the right, is located at $(\SI{1}{\m}, 0, 0)$, and is moving along the $-$x direction with a velocity of $\SI{1}{\m\per\s}$.
+Cube B, the one on the right, is located at $(\SI{5}{\m}, 0, 0)$, and is moving along the $-$x direction with a velocity of $\SI{1}{\m\per\s}$.
 
 Both cubes are 1x1x1 and have a mass of $\SI{1}{\kg}$. The coefficient restitution $\epsilon$ is a variable that ranges between $0$ and $1$.
 
@@ -122,11 +114,13 @@ The less these values vary, the more accurate the simulation is.
 
 RESULT
 
+All perfectly correct, for all engines.
+
 \subsubsection{Support test}
 
 SETUP
 
-A box will be placed on a static inclined plane. The coefficient restitution $\epsilon$ is set to be $0$ - this means a perfectly inelastic collision happens between the box and the plane, so the plane should be able to support the ball. Test if the ball could slide down the plane in an accurate manner.
+A box will be placed on a fixed inclined plane. The coefficient restitution $\epsilon$ is set to be $0$ - this means a perfectly inelastic collision happens between the box and the plane, so the plane should be able to support the ball. Test if the ball could slide down the plane in an accurate manner.
 
 The plane passes through the origin $(0, 0, 0)$ and is sufficiently long to hold the cube. The experiment is mostly within the $x-z$ plane. The cube is 1x1x1, and its center of mass is placed at $(-20\cos \theta + \frac{1}{2}\sin \theta, 0, 20\sin\theta+\frac{1}{2}\cos \theta)$. This means its middle contact point with the plane is always $d=20$m from the origin. Constant gravity $G = \SI{10}{\N}$ will be applied to the cube. At any none $0$ degree angle $(\theta > 0)$, the cube should slide down the plane. The time it takes for the $x$ coordinate of its centre to reach $\frac{1}{2}\sin \theta$ will be measured and checked with the theoretical result. Then the experiment will be repeated for different angles $\theta$ within the range $(0, \frac{\pi}{2})$.
 
@@ -138,13 +132,23 @@ In order to obtain a theoretically perfect result, consider a cube moving fricti
 
 RESULT
 
+5, 7.2, 7.433
+10, 5.04, 5.167
+20, 3.5, 3.633
+30, 2.88, 2.900
+40, 2.54, 2.567
+50, 2.32, 2.333
+60, 2.18, 2.233
+70, 2.08, 2.133
+80, 2.04, 2.100
+85, 2.02, 2.067
 
 \subsubsection{Pendulum test}
 
 SETUP
 
 Have a pendulum setup like in the following figure.
-A sphere of radius 1m is attached to a fixed point using a bar of radius $\SI{0.001}{\m}$ and length of $\SI{10}{\m}$.
+A sphere of radius 1m is attached to a fixed point using a thin cuboid with a length of $\SI{10}{\m}$.
 The initial angle between the bar that connects the sphere and an imaginary vertical line through the fixed point is $\theta$.
 
 \begin{center}
@@ -165,23 +169,7 @@ The periods as simulated by the engines will be plotted against the angle $\thet
 
 RESULT
 
-\subsubsection{Falling test}
 
-SETUP
-
-The performance of the engine will similarly be measured with a test.
-
-A total number of $n$ cubes, all of size $\SI{1}{\m} \times \SI{1}{\m} \times \SI{1}{\m}$, 
-are placed at $(0, 0, \SI{2}{\m}), (0, 0, \SI{4}{\m}), \ldots, (0, 0, (n \times 2)\SI{}{\m})$ above a plane of $z = 0$, 
-as shown below.
-
-The masses of each cube is chosen uniformly between $\SI{1}{\kg}$ to $\SI{10}{\kg}$, in order to add complexity.
-
-The average computational time of a time step is measured and plotted against the number of cubes, $n$.
-The average computational time is defined as the average of computational time 
-it takes for my computer to simulate the scene in the first $n$ seconds.
-
-RESULT
 
 \section{Qualitative analysis}
 

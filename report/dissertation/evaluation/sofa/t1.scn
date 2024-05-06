@@ -1,57 +1,58 @@
-<Node name="root" dt="0.01">
-    <!-- Create a default visual model for visualization -->
-    <VisualStyle displayFlags="showBehaviorModels showCollisionModels showForceFields showInteractionForceFields" />
+<?xml version="1.0" ?>
+<!-- See http://wiki.sofa-framework.org/wiki/TutorialCollisionCubeObstacle.scn -->
+<Node name="root" dt="0.01" gravity="0 -0 0">
+    <!-- Basic Components to perform the collision detection -->
 
-    <!-- Create the first cube -->
-    <MechanicalObject name="cube1" template="Vec3d" position="0 0 0" />
-    <MeshTopology name="cube1_topology" />
-    <MeshGmshLoader name="loader1" filename="mesh/cube.obj" />
-    <MechanicalObject name="cube1_stiffness" template="Vec3d" />
-    <UniformMass name="cube1_mass" totalmass="1" />
-    <TriangleFEMForceField name="cube1_forcefield" youngModulus="1000" poissonRatio="0.3" />
+    <RequiredPlugin name="Sofa.Component.Collision.Detection.Algorithm"/> <!-- Needed to use components [BVHNarrowPhase, BruteForceBroadPhase, CollisionPipeline] -->  
+    <RequiredPlugin name="Sofa.Component.Collision.Detection.Intersection"/> <!-- Needed to use components [MinProximityIntersection] -->  
+    <RequiredPlugin name="Sofa.Component.Collision.Geometry"/> <!-- Needed to use components [LineCollisionModel, PointCollisionModel, SphereCollisionModel, TriangleCollisionModel] -->  
+    <RequiredPlugin name="Sofa.Component.Collision.Response.Contact"/> <!-- Needed to use components [CollisionResponse] -->  
+    <RequiredPlugin name="Sofa.Component.LinearSolver.Iterative"/> <!-- Needed to use components [CGLinearSolver] -->  
+    <RequiredPlugin name="Sofa.Component.Mass"/> <!-- Needed to use components [UniformMass] -->  
+    <RequiredPlugin name="Sofa.Component.ODESolver.Backward"/> <!-- Needed to use components [EulerImplicitSolver] -->  
+    <RequiredPlugin name="Sofa.Component.SolidMechanics.Spring"/> <!-- Needed to use components [MeshSpringForceField] -->  
+    <RequiredPlugin name="Sofa.Component.StateContainer"/> <!-- Needed to use components [MechanicalObject] -->  
+    <RequiredPlugin name="Sofa.Component.Topology.Container.Constant"/> <!-- Needed to use components [MeshTopology] -->  
+    <RequiredPlugin name="Sofa.Component.Visual"/> <!-- Needed to use components [VisualStyle] --> 
+    
+    <VisualStyle displayFlags="showBehavior showCollisionModels" />
+    <CollisionPipeline />
+    <BruteForceBroadPhase/>
+    <BVHNarrowPhase/>
+    <CollisionResponse />
+    <MinProximityIntersection alarmDistance="1" contactDistance="0.5"/>
+    <DefaultAnimationLoop/>
 
-    <!-- Create the second cube -->
-    <MechanicalObject name="cube2" template="Vec3d" position="2 0 0" />
-    <MeshTopology name="cube2_topology" />
-    <MeshGmshLoader name="loader2" filename="mesh/cube.obj" />
-    <MechanicalObject name="cube2_stiffness" template="Vec3d" />
-    <UniformMass name="cube2_mass" totalmass="1" />
-    <TriangleFEMForceField name="cube2_forcefield" youngModulus="1000" poissonRatio="0.3" />
-
-    <!-- Collision -->
-    <CollisionPipeline name="pipeline" />
-    <CollisionModel name="collision_model" />
-    <BruteForceDetection name="detection" />
-    <LinearSolverConstraintCorrection name="solver" />
-    <CollisionResponse name="response" response="response" />
-
-    <!-- Visualize -->
-    <OglModel name="visual_model" src="@loader1" />
-    <OglModel name="visual_model2" src="@loader2" />
-
-    <!-- Connect components -->
-    <Node name="cube1_node" >
-        <MechanicalObject_link src="@cube1" />
-        <TriangleFEMForceField_link src="@cube1_forcefield" />
-        <UniformMass_link src="@cube1_mass" />
-        <MeshTopology_link src="@cube1_topology" />
+    <!-- Using a deformable cube using collision spheres  -->
+    <Node name="Cube1">
+        <EulerImplicitSolver name="EulerImplicit Cube1"  rayleighStiffness="0.1" rayleighMass="0.1" />
+        <CGLinearSolver name="CG Solver Cube1" iterations="25" tolerance="1e-5" threshold="1e-5"/>
+        <MechanicalObject template="Rigid3d" name="myParticle" 
+            position="0 0 0    0 0 0 1" 
+            translation="0 0 0"
+            velocity="1 0 0    0 0 0"
+            showObject="1" />
+        <MeshTopology name="Topology Cube1" hexas="0 4 6 2 1 5 7 3" />
+        <UniformMass name="Mass Cube1" totalMass="1" />
+        <!-- Collision Models -->
+        <TriangleCollisionModel name="Triangles For Collision" />
+        <LineCollisionModel name="Lines For Collision" />
+        <PointCollisionModel name="Points For Collision" />
     </Node>
-
-    <Node name="cube2_node" >
-        <MechanicalObject_link src="@cube2" />
-        <TriangleFEMForceField_link src="@cube2_forcefield" />
-        <UniformMass_link src="@cube2_mass" />
-        <MeshTopology_link src="@cube2_topology" />
+    <!-- Using a deformable cube using collision triangles, lines and points  -->
+    <Node name="Cube2">
+        <EulerImplicitSolver name="EulerImplicit Cube2" />
+        <CGLinearSolver name="CG Solver Cube2" iterations="25" tolerance="1e-5" threshold="1e-5"/>
+        <MechanicalObject template="Rigid3d" name="myParticle" 
+            position="0 0 0    0 0 0 1" 
+            translation="5 0 0"
+            velocity="-1 0 0    0 0 0"
+            showObject="1" />
+        <MeshTopology name="Topology Cube2" hexas="0 4 6 2 1 5 7 3" />
+        <UniformMass name="Mass Cube2" totalMass="1" />
+        <!-- Collision Models -->
+        <TriangleCollisionModel name="Triangles For Collision" />
+        <LineCollisionModel name="Lines For Collision" />
+        <PointCollisionModel name="Points For Collision" />
     </Node>
-
-    <Node name="collision_node" >
-        <MechanicalObject_link src="@collision_model" />
-        <CollisionPipeline_link src="@pipeline" />
-        <CollisionModel_link src="@collision_model" />
-        <BruteForceDetection_link src="@detection" />
-        <LinearSolverConstraintCorrection_link src="@solver" />
-        <CollisionResponse_link src="@response" />
-    </Node>
-
-    <VisualStyle name="VisualStyle" displayFlags="showBehaviorModels showCollisionModels showForceFields" />
 </Node>
