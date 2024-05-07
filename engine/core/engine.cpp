@@ -36,6 +36,7 @@ public:
             stateDerivative.linearMomentum = stateDerivative.linearMomentum * dt + state.linearMomentum;
             stateDerivative.position = stateDerivative.position * dt + state.position;
             stateDerivative.rotation = stateDerivative.rotation * dt + state.rotation;
+            stateDerivative.position = stateDerivative.position.unit() * 20.0;
             body->addState(std::make_pair(time + dt, stateDerivative));
         }
         currentTime += dt;
@@ -49,7 +50,7 @@ public:
     }
     int bruteForceCheckCollision(Collision* c = nullptr) {
         int n = bodies.size();
-        return ((bodies[0]->getLatestState().position - bodies[1]->getLatestState().position).dist() < 1);
+        return 0;
         for (int i = 0; i < n; i++)
             for (int j = i + 1; j < n; j++)
                 if (CollisionDetection::bruteForceCheckCollisionForOnePair(bodies[i], bodies[j], c))
@@ -88,9 +89,7 @@ public:
             if (bruteForceCheckCollision()) {
                 rollBack();
                 auto c = advanceToFirstCollision(dt);
-                // CollisionResolution::resolveCollision(c);
-                for (auto x : bodies)
-                    x->getLatestState().linearMomentum = x->getLatestState().linearMomentum * (-1);
+                CollisionResolution::resolveCollision(c);
             }
         }
     }
