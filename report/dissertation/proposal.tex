@@ -10,84 +10,308 @@
 \Large
 Computer Science Tripos -- Part II -- Project Proposal\\[4mm]
 \LARGE
-How to write a dissertation in \LaTeX\\[4mm]
+Building a Physics Engine From Scratch\\[4mm]
 \large
-M.~Richards, St John's College
-Originator: Dr M.~Richards
-14 October 2011
+17 Oct 2023
 \end{center}
 \vspace{5mm}
-\textbf{Project Supervisor:} Dr M.~Richards
-\textbf{Director of Studies:} Dr M.~Richards
-\textbf{Project Overseers:} Dr F.~H.~King \& Dr A.~W.~Moore
 % Main document
 \section*{Introduction}
-\emph{The problem to be addressed.}
-Many students write their CST dissertations in \LaTeX\ -- and spend a
-fair amount of time learning just how to do that. The purpose of this
-project is to write a demonstration dissertation that provides
-a starting point to show how it is done.
-This core proposal document will be augmented by a separately-printed
-cover sheet at the front and a resource form at the end. Additional
-sheets for risk assessment and human resources may also need to be
-included.
-This document will elaborate much of the material that is summarised on
-the additional sheets.
+Physics Engine, a term frequently used in video game industry and science research, 
+is a tool that simulates physical phenomena using a computer.
+The first computer, ENIAC, at one point used a physics engine to help design military weapons\cite{rojas2002first}.
+At the core of physics engine, semi-realistic results are obtained through a combination of 
+computation-efficient numerical approximations, 
+careful modelling of the objects, 
+and sometimes clever hacks that enable the engine to just make the cut.
+
+There are some common terminologies in physics engines.
+\begin{itemize}
+\item \textbf{Rigid body} is an individual object that will be simulated in the engine.
+A rigid body is an object that does not distort or bend, as opposed to soft body or fluid, 
+which gives rigid bodies the benefit of simplicity.
+A typical physics engine needs to keep track of its mass, position, orientation, linear velocity, angular velocity and impulse.
+\item \textbf{Collider} is a part of a rigid body.
+Complex rigid bodies tend to get separated into simple, convex colliders like spheres and boxes in the pipeline.
+\item \textbf{Collision detection} and \textbf{Collision resolution} are components of the engine which handle the interaction between colliders.
+Commonly physics engine continuously advances the time by a small fraction of a second, moving the objects according to their speed.
+After each position update, Collision detection will kick in and detect if a pair of colliders will intersect.
+If so, Collision resolution will decide whether and how they will get bounced and separated apart, 
+updating their velocities accordingly.
+\end{itemize}
+
+Many open-source physics engines are available online, including PhysX\cite{physx}, 
+Box2D\cite{box2d} and Bullet\cite{bullet}.
+However, the most common way a physics engine is presented is as a big, mysterious library 
+where all the computation is done under dozens of dependencies and documentation.
+As a result, adding a simple feature could take a lot of effort of plowing through documentation and files.
+I want to build my own physics engine, 
+which gives me the flexibility to add whatever I want because I would know exactly how it works.
 \section*{Starting point}
 \emph{Describe existing state of the art, previous work in this area,
 libraries and databases to be used. Describe the state of any
 existing codebase that is to be built on.}
 I am already able to write prose using the English language. I have an
 online dictionary, etc.
-\section*{Resources required}
-\emph{A note of the resources required and confirmation of access.}
-For this project I shall mainly use my own quad-core computer that
-runs Fedora Linux. Backup will be to github and/or to an SVN
-repository on an external hard disk that is dumped to writable CD/DVD
-media. I have another similar computer to hand should my main machine
-suddenly fail. I require no other special resources.
-\section*{Work to be done}
-\emph{Describe the technical work.}
-The project breaks down into the following sub-projects:
-\begin{enumerate}
-\item The construction of a skeleton dissertation with the required
-structure. This involves writing the Makefile and making dummy
-files for the title page, the proforma, chapters 1 to 5, the
-appendices and the proposal.
-\item Filling in the details required in the cover page and proforma.
-\item Writing the contents of chapters 1 to 5, including examples of
-common \LaTeX\ constructs.
-\item Adding a example of how to use floating figures and ''encapsulated
-PostScript'' or PDF diagrams.
-\end{enumerate}
-\section*{Success citeria}
-\emph{Describe what you expect to be able to demonstrate at the
-end of the project and how you are going to evaluate your achievement.}
-The project will be a success if I have a completed dissertation with
-the correct chapter titles and I have achieved my other success
-criteria, which are to blah \ldots
-\section*{Possible extensions}
-{\em Potential further envisaged evaluation metrics or extensions.}
-If I achieve my main result early I shall try the following
-alternative experiment or method of evaluation \ldots
-\section*{Timetable}
-\emph{A workplan of perhaps ten or so two-week work-packages,
-as well as milestones to be achieved along the way. Provide a
-target date for each milestone.}
-Planned starting date is 16/10/2011.
-\begin{enumerate}
-\item \textbf{Michaelmas weeks 2--4} Learn to use X. Read book Y. Read papers Z.
-\item \textbf{Michaelmas weeks 5--6} Do preliminary test of Q.
-\item \textbf{Michaelmas weeks 7--8} Start implementation of main task A.
-\item \textbf{Michaelmas vacation} Finish A and start main task B.
-\item \textbf{Lent weeks 0--2} Write progress report. Generate corpus of
-test examples. Finish task B.
-\item \textbf{Lent weeks 3--5} Run main experiments and achieve working project.
-\item \textbf{Lent weeks 6--8} Second main deliverable here.
-\item \textbf{Easter vacation:} Extensions and writing dissertation main
-chapters.
-\item \textbf{Easter term 0--2:} Further evaluation and complete dissertation.
-\item \textbf{Easter term 3:} Proof reading and then an early submission
-so as to concentrate on examination revision.
-\end{enumerate}
+\section*{Description}
+
+My project aims to build a 3D real-time physics engine from scratch that implements basic modules, 
+without making use of any currently available physics engine.
+My focus will be to realise the visual effects rather than being extremely accurate or efficient,
+considering the limited time, my available hardware resources, and the ease of experiments and showcases.
+This is also why I chose to build a real-time physics engine over a high-precision one.
+In addition, this project will also provide a basic framework that is easy to extend upon in the future, if necessary.
+Overall, this project will be a great opportunity for me to learn more about physics and programming.
+
+Here is a list of the basic core modules I plan to implement:
+\begin{itemize}
+\item Object modelling: Create data structures for recording attributes of rigid bodies and design interfaces for applying forces and adding colliders.
+Typical physical attributes of rigid bodies include mass, position, orientation, linear velocity, angular velocity, and impulse.
+\item Collision detection: Adopt many algorithms to decide if collisions happen.
+\item Bounce: Part of Collision resolution where some maths are used to find the approximated results of a bounce.
+\item Friction: Part of Collision resolution where vast assumptions are used to simulate real-life friction.
+\item Stability: Part of Collision resolution where some heuristics are used to prevent certain visual artefacts.
+For example, if two objects are stacked together, the upper one should not be bouncing up and down constantly.
+\end{itemize}
+
+The project could then be evaluated by comparisons using simple experiments against existing popular physics engines.
+More on this in the Evaluation section.
+
+Extension modules I plan to look at include:
+\begin{itemize}
+\item Fluid simulation:
+
+Fluid simulation involves approximations to fluid equations, 
+and can have different levels of complexity depending on the topic.
+For example, 
+the simulation of buoyant force of hard objects submerged in water will be simpler than 
+the simulation of the flow of the fluid.
+I will try my best to cover as much in fluid simulation as I can.
+
+\item Real-time rendering:
+
+For the sake of showcasing, I might be using existing rendering libraries like Blender\cite{blender}, 
+but it is certainly better to not rely on them.
+
+\item Performance evaluation
+
+I will give different implementations for CPU and GPU, 
+which will then allow me to draw comparisons about their contributions to performance.
+
+\item Soft-body simulation
+
+Unlike rigid bodies, the shape of objects can change to a certain degree.
+Therefore, it is much harder to model them and deal with collisions.
+I will need to do research and choose what to implement. 
+
+\end{itemize}
+
+\section*{Evaluation}
+
+The evaluation of this project is split into three parts: Benchmark selection, Core functionality, and Performance evaluation.
+
+\subsection*{Benchmark selection}
+
+Since the functionality evaluations will be largely comparison-based,
+I will be choosing at least three open-source physics engines that support similar features to compare against.
+The following engines have been found as possible candidates:
+
+\begin{table}[h]
+    \centering
+    \makebox[\linewidth]{
+    \begin{tabular}
+    {|c|c|}
+    \hline 
+    Physics engine                                & Website                                                         \\
+    \hline 
+    Advanced Simulation Library                   & asl.org.il                                           \\
+    Bullet                                        & pybullet.org                                           \\
+    Newton Game Dynamics                          & newtondynamics.com/forum/newton.php                      \\
+    Open Dynamics Engine                          & www.ode.org                                            \\
+    PAL              & www.adrianboeing.com/pal                                \\
+    PhysX                                         & www.nvidia.com/en-gb/geforce/technologies/physx        \\
+    Project Chrono~                               & projectchrono.org                                      \\
+    Siconos                                       & nonsmooth.gricad-pages.univ-grenoble-alpes.fr/siconos  \\
+    SOFA & www.sofa-framework.org                                 \\
+    Tokamak physics engine                        & github.com/isegal/TokamakPhysics                        \\
+    \hline
+    \end{tabular}
+    }
+\end{table}
+
+I plan to further narrow them down by testing if they work in my environment, 
+if they have sufficient documentation, 
+and if they support the features I am going to compare on.
+
+\subsection*{Core functionality}
+
+I will evaluate the accuracy of the physics engine by setting up experiments like 
+pendulums and boxes sliding down inclined planes in my physics engine. 
+I will then compare how the rigid bodies move in the engine with the well known 
+physical results of how these systems behave in real life.
+
+\subsection*{Performance evaluation}
+
+This part is considered as an extension. The performance will similarly be measured with an experiment.
+
+There will be comparisons between my engine and other benchmark engines, 
+as well as between different implementations of my engine.
+
+I will define, measure and then plot the average computational time of a time step, while
+I gradually make the scene more complicated by adding in more objects.
+
+\section*{Starting Point}
+
+Personally, I have some basic knowledge of programming in C++, having completed a small project using it during my internship.
+My graphics knowledge only comes from the two Part IA and IB graphics courses.
+
+Additionally, I have done a bit of research online, 
+and am therefore decently confident about the abundance of tutorial resources, 
+despite not actually having spent time reading through them.
+For example, a full video series about physics engine is available on the Internet\cite{tutorialyt}.
+I might also make use of 3D graphics libraries like CUDA\cite{cuda}, but as of now I have no prior working experience with them.
+
+The aforementioned open-source physics engine libraries are also available for me to look into some possible solutions or draw comparisons, 
+but I will not be using their simulation code in my project.
+
+\section*{Success criteria}
+
+For the core:
+
+\begin{itemize}
+\item Implement all basic modules: Object modelling, Collision detection, Bounce, Friction, Stability.
+
+\item Evaluate the engine by comparing it with popular existing engines with simple experiments.
+
+\item Demonstrate that the engine works with screenshots of simple examples.
+\end{itemize}
+
+For extensions (ordered by priority):
+
+\begin{itemize}
+\item Implement fluid dynamics.
+
+\item Implement different versions of the engine for whether GPU is used, and for other interesting parameters like the number of cores used. 
+Then evaluate the performance.
+
+\item Implement real-time rendering, which should allow the project to meet all previous criteria without third-party rendering libraries. 
+
+\item Implement soft-body dynamics.
+\end{itemize}
+
+\section*{Work plan}
+
+\subsection*{Michaelmas term}
+
+\subsubsection*{Now - 15 Oct}
+
+Write project proposal
+
+Research for libraries to use
+
+Environment setup
+
+Milestone: Complete full project proposal
+
+\subsubsection*{16 Oct - 29 Oct}
+
+Set up the project framework
+
+Implement basic interfaces into rendering libraries
+
+Milestone: Able to produce a blank video or an empty interactive demo
+
+\subsubsection*{30 Oct - 19 Nov}
+
+Implement Object Modelling
+
+\subsubsection*{20 Nov - 3 Dec}
+
+Implement Collision Detection
+
+\subsection*{Christmas break}
+
+\subsubsection*{4 Dec - 17 Dec}
+
+Implement Bounce, Friction
+
+\subsubsection*{18 Dec - 14 Jan}
+
+Implement Stability
+
+Milestone: Complete the core
+
+\subsection*{Lent term}
+
+\subsubsection*{15 Jan - 28 Jan}
+
+Buffer phase for core implementation
+
+Core evaluation if core is completed
+
+Write progress report
+
+Milestone: Completed a draft of the progress report
+
+\subsubsection*{29 Jan - 15 Feb}
+
+Buffer phase for core evaluation
+
+Start extension implementations
+
+Finish progress report
+
+Milestone: Submit the Progress Report (Deadline 2 Feb)
+
+\subsubsection*{16 Feb - 1 Mar}
+
+Implement extensions
+
+Start dissertation write up
+
+\subsubsection*{1 Mar - 15 Mar}
+
+Wrap up implementations
+
+Continue writing the dissertation
+
+Milestone: Implementations completed
+
+\subsection*{Easter break}
+
+\subsubsection*{16 Mar - 1 Apr}
+
+Complete a draft of the dissertation, available for view and feedback
+
+Milestone: First draft of dissertation completed
+
+\subsubsection*{2 Apr - 22 Apr}
+
+Improve the dissertation based on the feedback
+
+Milestone: Second draft of dissertation completed
+
+\subsection*{Easter term}
+
+\subsubsection*{23 Apr - 1 May}
+
+Improve the dissertation based on the feedback
+
+Milestone: Third and final draft of dissertation completed
+
+\subsubsection*{2 May - 10 May}
+
+Finalise the dissertation
+
+Milestone: Submit the final dissertation (Deadline 10 May)
+
+\section*{Resource declaration}
+
+\begin{itemize}
+\item I will be using my personal laptop (specs) as my main working device.
+\item For backup and workflow tracking, I will make use of GitHub, Google Drive, and Overleaf
+\item For development, I will be using rendering libraries like Blender, as well as GPU interfaces such as CUDA.
+\item As a backup plan I have another laptop for working.
+\end{itemize}
+
 \end{document}
