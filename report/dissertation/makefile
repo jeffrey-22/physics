@@ -35,7 +35,7 @@ help:
 	@echo
 view-%: %.pdf
 	( okular --unique $< || evince $< ) &
-diss.pdf: makefile.txt proposal.tex diss.bbl
+diss.pdf: figs/* makefile.txt proposal.tex diss.bbl
 makefile.txt: makefile
 	expand makefile >makefile.txt
 count:
