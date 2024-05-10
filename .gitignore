@@ -9,6 +9,12 @@ build/
 *.dll
 *.so
 *.dylib
+*.aux
+*.log
+*.lof
+*.bbl
+*.blg
+*.toc
 
 # Executables
 *.exe
