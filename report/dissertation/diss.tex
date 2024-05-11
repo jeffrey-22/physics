@@ -13,6 +13,7 @@
 \usepackage{pgfgantt}
 \usepackage{lscape}
 \usepackage{dirtree}
+\usepackage{pgfgantt}
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -530,18 +531,11 @@ The project mainly tackles software engineering challenges. The waterfall develo
 \item Contrast with agile development, the project focuses on building one predetermined software, so reiterations are unecessary.
 \end{itemize}
 
-During the process of the development there has been some delays in some parts, so I spent some buffer time to catch up with some difficulties, particularly in the implementation stage and dissertation writeup stage. Gantt chart \ref{ganttlbl} is also used for the planning of the project.
+During the process of the development there has been some delays in some parts, so I spent some buffer time to catch up with some difficulties, particularly in the implementation stage and dissertation writeup stage. Gantt chart was also used for the planning of the project.
 
-
-\begin{figure}\begin{center}\label{ganttlbl}
+\begin{figure}\begin{center}
     \resizebox{\linewidth}{!}{%
-\begin{ganttchart}{1}{30}[
-    
-    bar label font=\small,
-    milestone label font=\small,
-    group label font=\small,
-    expand chart=1.2\textwidth
-]
+\begin{ganttchart}{1}{30}
     \gantttitle{Project Progress Gantt Chart (30 Weeks)}{30} \\
     \gantttitlelist{1,...,30}{1} \\
     \ganttbar{Implementation}{1}{15} \\
@@ -582,8 +576,8 @@ The above figure describes the structure of the repository. The main engine is p
     \node [draw, fill=green!20] at (0, 1.5) (d) {Core engine};
     \node [draw, fill=green!20] at (4,1) (e) {Collision Detection};
     \node [draw, fill=green!20] at (4, 2) (f) {Collision Resolution};
-    \node [none] at (7, 1.5) (g) {};
-    \node [none] at (7, 1) (h) {};
+    \node [draw=none] at (7, 1.5) (g) {};
+    \node [draw=none] at (7, 1) (h) {};
     \path [draw, ->] (e) -- (f);
     \path [draw, ->] (d) -- (e);
     \path [draw, ->] (a) -- (d);
@@ -673,7 +667,7 @@ As a preprocessing step, the bounding boxes of all existing rigid bodies are gen
 \begin{figure}
 \label{bboxfig}
 \begin{center}
-    \makebox[\textwidth]{\includegraphics[width=\textwidth]{figs/Bounding_box.png}}
+    \makebox[\textwidth]{\includegraphics[scale=0.5]{figs/Bounding_box.png}}
   \end{center}
     \caption{Bounding Box. Source: \cite{bbox}}
 \end{figure}
@@ -685,9 +679,9 @@ Checking if any pairs of bounding boxes overlap is much more efficient. Even a n
 \begin{itemize}
 \item One-dimensional case: Consider what will happen if the bounding boxes are in only one dimension. In that case, the boxes are actually simply segments. Let's say the $i$-th segment covers $l_i$ to $r_i$, and we are tasked with finding all the overlapping pairs quickly, where there are $n$ segments at the beginning, and at most $m$ pairs overlap. Figure \ref{seglbl} gives a demonstration.
 
-\begin{figure}
+\begin{figure}\label{seglbl}
     \begin{center}
-        \makebox[\textwidth]{\includegraphics[width=\textwidth]{figs/img5.png}}
+        \makebox[\textwidth]{\includegraphics[scale=0.1]{figs/img5.png}}
       \end{center}
     \caption{Segments}
 \end{figure}
@@ -842,7 +836,7 @@ They have then been further narrowed down in consideration of supportability, do
 \end{table}
 
 
-\section{Quantitative evaluations} \ref{explbl}
+\section{Quantitative evaluations} \label{explbl}
 
 The functionalities of selected physics engines along with mine will be evaluated through a series of small runtime tests.
 The tests partially drew inspiration from other existing researches on physics engines\cite{seugling2006evaluation}.
@@ -859,7 +853,7 @@ Cube A, the one on the left, is located at $(0, 0, 0)$, and is moving along the 
 
 Cube B, the one on the right, is located at $(\SI{5}{\m}, 0, 0)$, and is moving along the \code{-x} direction with a velocity of $\SI{1}{\m\per\s}$.
 
-Both cubes are 1x1x1 and have a mass of $\SI{1}{\kg}$. The coefficient restitution $\epsilon$ is a variable that ranges between $0$ and $1$.
+Both cubes are $1\times 1\times 1$ and have a mass of $\SI{1}{\kg}$. The coefficient restitution $\epsilon$ is a variable that ranges between $0$ and $1$.
 
 \begin{center}
   \makebox[\textwidth]{\includegraphics[width=\textwidth]{figs/img1.png}}
@@ -891,7 +885,7 @@ As seen in figures \ref{ev1} and \ref{ev2}, both the sum of momentum and the tot
 
 A box will be placed on a fixed inclined plane. The coefficient restitution $\epsilon$ is set to be $0$ - this means a perfectly inelastic collision happens between the box and the plane, so the plane should be able to support the ball. Test if the ball could slide down the plane in an accurate manner. In order to simulate the plane being "fixed" while still being a cuboid rigid body, its mass will be set to infinite, and will be carefully placed with some initial rotation.
 
-The plane passes through the origin $(0, 0, 0)$ and is sufficiently long to hold the cube. The experiment is mostly within the $x-z$ plane. The cube is 1x1x1, and its center of mass is placed at $(-20\cos \theta + \frac{1}{2}\sin \theta, 0, 20\sin\theta+\frac{1}{2}\cos \theta)$. This means its middle contact point with the plane is always $d=20$m from the origin. Constant gravity $G = \SI{10}{\N}$ will be applied to the cube. At any none $0$ degree angle $(\theta > 0)$, the cube should slide down the plane. The time it takes for the $x$ coordinate of its centre to reach $\frac{1}{2}\sin \theta$ will be measured and checked with the theoretical result. Then the experiment will be repeated for different angles $\theta$ within the range $(0, \frac{\pi}{2})$.
+The plane passes through the origin $(0, 0, 0)$ and is sufficiently long to hold the cube. The experiment is mostly within the $x-z$ plane. The cube is $1 \times 1 \times 1$, and its center of mass is placed at $(-20\cos \theta + \frac{1}{2}\sin \theta, 0, 20\sin\theta+\frac{1}{2}\cos \theta)$. This means its middle contact point with the plane is always $d=20$m from the origin. Constant gravity $G = \SI{10}{\N}$ will be applied to the cube. At any none $0$ degree angle $(\theta > 0)$, the cube should slide down the plane. The time it takes for the $x$ coordinate of its centre to reach $\frac{1}{2}\sin \theta$ will be measured and checked with the theoretical result. Then the experiment will be repeated for different angles $\theta$ within the range $(0, \frac{\pi}{2})$.
 
 In order to obtain a theoretically perfect result, consider a cube moving frictionless slope. Its acceleration along the slope should be $a=\frac{G}{m}\sin \theta$. If the time it takes when accelerating from a static position is $t$, the distance travelled should be $\frac{1}{2}at^2$. So the theoretical time it takes to reach the origin should be $t_0=\sqrt{\frac{2d}{a}}=\sqrt{\frac{2dm}{G\sin \theta}}=\frac{2}{\sqrt{\sin\theta}}$.
 
@@ -937,19 +931,13 @@ The periods as simulated by the engines will be plotted against the angle $\thet
 
 \subsubsection{Result}
 
-TBA
-5, 18.24 (/ 2.5)
-10, 18.30
-20, 18.26
-30, 18.26
-40, 18.30
-50, 18.36
-60, 18.46
-70, 18.58
-80, 18.80
-85, 18.93
+\begin{figure} \label{ev4}
+    \begin{center}
+        \makebox[\textwidth]{\includegraphics[width=\textwidth]{figs/p4.png}}
+      \end{center}
+    \end{figure}
 
-As seen in [fig], this is an experiment where all the physics engine deviate quite a bit from the theoretical results. Engines generally take a longer time to swing the pendulum as the degree increase, possibly due to the accumulation of correction errors from the thread constraining the object, which should have resulted in an arc, but got simulated as small segments.
+As seen in figure \ref{ev4}, this is an experiment where all the physics engine deviate quite a bit from the theoretical results. Engines generally take a longer time to swing the pendulum as the degree increase despite the degree being an invariant in the period formula, possibly due to the accumulation of correction errors from the thread constraining the object, which should have resulted in an arc, but got simulated as small segments.
 
 \section{Success criteria}
 
@@ -976,13 +964,17 @@ Then evaluate the performance.
 
 \item Implement soft-body dynamics.
 
-Referring back to the success criteria, I consider all core criteria to be completed and successful. Extensions were attempted but not as successful. All basic modules related to rigid body simulation are implemented and evaluated with simple experiments. The followings figure TBA are some example screenshots of the resulting rendered video.
+Referring back to the success criteria, I consider all core criteria to be completed and successful. Extensions were attempted but not as successful. All basic modules related to rigid body simulation are implemented and evaluated with simple experiments. The followings figure \ref{sc1} and figure \ref{sc2} are some example screenshots of the resulting rendered video.
 
-\begin{center}
+\begin{figure}\label{sc1}
   \makebox[\textwidth]{\includegraphics[width=\textwidth]{figs/sc1.png}}
-\end{center}
+  \caption Screenshot
+\end{figure}
 
-[fig]TBA
+\begin{figure}\label{sc2}
+    \makebox[\textwidth]{\includegraphics[width=\textwidth]{figs/sc2.png}}
+    \caption Screenshot
+  \end{figure}
 
 The results of the evaluations also show a high correlation with real-life physics results. Therefore, my physics engine is indeed capable of simulating simple rigid body interactions.
 
