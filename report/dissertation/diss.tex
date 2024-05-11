@@ -9,6 +9,9 @@
 \usepackage{color}
 \usepackage{siunitx}
 \usepackage{gensymb}
+\usepackage{tikz}
+\usepackage{pgfgantt}
+\usepackage{lscape}
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -92,6 +95,8 @@ None.
 
 \chapter{Introduction}
 
+\section{Background}
+
 Physics Engine attempts to simulate real life physical properties through well-known physics laws. Starting as a branch of computer graphics, they quickly became commonly used in video games, since many games try to resemble what we already have in the real world. In general, this is done with a physics engine, encapsulating most physics simulation modules. They are then incorporated into the game engine itself, allowing scripts to easily control the movement and settings of important game objects. The most popular game engine for example, Unity\cite{unity}, has its own implementation of physics engine.
 
 It then becomes significantly easier for game developers to simulate realistic effects. For example, to create "Flappy Bird\cite{flappybird}" in unity, the bird could be attached with a rigid body physics component, which could then modify the movement of the bird according to gravity with response to player controls. The underlying physics engine sees the rigid body, and attempts to modify its position and rotation according to physics law. This engine integration has become an important tool of game development.
@@ -124,9 +129,9 @@ Application level researches demonstrate several science or real life applicatio
 
 \section{Structure of the dissertation}
 
-The following Chapter 2 presents theoretical background maths for implementing rigid body simulation. Chapter 3 highlights some of the software engineering challenges along with some extra relevant algorithms for tackling a few specific problems. In Chapter 4, some evaluations are conducted for the physics engine using simple experiments and comparisons. Finally, Chapter 5 discusses my personal lessons and success, while giving some ideas for potential future work.
+The following Chapter \ref{chap2} presents theoretical background maths for implementing rigid body simulation. Chapter \ref{chap3} highlights some of the software engineering challenges along with some extra relevant algorithms for tackling a few specific problems. In Chapter \ref{chap4}, some evaluations are conducted for the physics engine using simple experiments and comparisons. Finally, Chapter \ref{chap5} discusses my personal lessons and success, while giving some ideas for potential future work.
 
-\chapter{Preparation}
+\chapter{Preparation}\label{chap2}
 
 \section{Starting point}
 
@@ -144,9 +149,9 @@ I decided to use C++ as the main programming language for the project, which Pro
 
 As for the libraries, I had no experience with any of the relevant rendering libraries, so I had to learn from scratch on using Blender\cite{blender}. Its documentation page with scripting\cite{blenderdoc} helps a lot. Besides Blender, several third-party libraries provided support for utitilies like testing and plotting. I also tried importing some other libraries during development but later removed them due to them not being helpful.
 
-Here is a list of all third-party software I have used in the current project:
+Table \ref{tplbl} lists out all third-party software I have used in the current project/
 
-\begin{table}[h]
+\begin{table}[h]\label{tplbl}
     \centering
     \makebox[\linewidth]{
     \begin{tabular}{|c|c|c|}
@@ -170,19 +175,33 @@ Here is a list of all third-party software I have used in the current project:
 
 I used Visual Studio Code on my laptop (11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz CPU, 16.0 GB RAM, NVIDIA GeForce RTX 3050 Laptop GPU) for engine implementation. Some plots and tests were done with Google Colab and Kaggle Notebook. Platforms including GitHub and Google Drive allowed for backups and simple version control for the project. For the writeup of this dissertation, Overleaf helped with \LaTeX compilation and file management.
 
-\section{Structure of the engine / Background theory}
+\section{Structure of the engine}
 
-Physics engine here in my project specifically refers to Rigid body simulation, as it is the main component and the building block of any large-scale complete game engine. Other possible compoents are considered extensions. The main working loop of the engine could be described by a simple feedback loop framework in [figure]
-%%HEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHERE
-[figure]
+Physics engine here in my project specifically refers to Rigid body simulation, as it is the main component and the building block of any large-scale complete game engine. Other possible compoents are considered extensions. The main working loop of the engine could be described by a simple feedback loop framework by figure \ref{looplbl}.
+\begin{figure}\label{looplbl}
+    \centering
+\begin{tikzpicture}
+    \node [draw, fill=blue!20] at (0,0) (a) {\textbf{Start}};
+    \node [draw, fill=blue!20] at (0,-2) (b) {Unconstrained Simulation};
+    \node [draw, fill=green!20] at (5,-2) (c) {Collision Detection};
+    \node [draw, fill=red!20] at (12.5,-2) (d) {Collision Resolution};
+    \node[draw=none] at (8.75, -1.75) (e) {Found collision};
+    \node[draw=none] at (8.75, -3) (f) {};
+    \node[draw=none] at (9.15, -3) (g) {};
+    \path [draw, ->] (a) -- (b);
+    \path [draw, ->] (b) -- (c);
+    \path [draw, ->] (c) -- (d);
+    \path [draw, -] (d) |- (f);
+    \path [draw, ->] (g) -| (b);
+\end{tikzpicture}
+\caption{Core Feedback Loop}
+\end{figure}
 
 After the initial setup of the objects as rigid bodies, the engine begins a main feedback loop. Each iteration of the loop attempts to advance the simulation by a small time frame, and at the end of each time frame, the position and rotation data could be updated, and then serialized and exported to the rendering software, currently Blender.
 
 In each iteration of the loop, all rigid bodies are assumed to start in a nonpenetration state, that is, no pairs of rigid bodies intersect with each other. But touching on some faces are allowed. Then, we perform the unconstrained simulation for a small timeframe $dt$. During this simulation it is assumed that no collisions happened. Finally, collision detection and resolution are performed, correcting mistakes from the unconstrained simulation. Some more details of these steps are described below.
 
-\subsection{Unconstrained simulation / Rigid body modelling}
-
-(How the linear/angular speed, rotation and translation defines the state of a rigid body.)
+\subsection{Rigid body modelling}
 
 In general, the goal of unconstrained simulation is to first track the status of all rigid bodies as reasonable mathematical data structure, and then update them assuming no collisions ever happen.
 
@@ -199,7 +218,7 @@ Each element of the state needs to be defined then differentiated separately.
 A 3-element vector containing the $x$ $y$ $z$ coordinates of the center of the rigid body relative to the world center. The center of a rigid body is the center of mass, which is defined as
 
 \begin{equation}
-x=\frac{\sum{m_i}{x_i}}{M}
+x=\frac{\sum{m_i}{x_i}}{M}\label{eq:3}
 \end{equation}
 
 if we consider the body is made up of many small particles, the $i$-th one at position $x_i$ in world space while having mass $m_i$. $M$ is the total mass of the body
@@ -221,7 +240,7 @@ v = \frac{d}{dt}x
 A $3\times 3$ matrix describing how the rigid body has rotated around its center. For any particle on the body, consider $r_i$ to be its body space location, i.e. the coordinates if the body is placed upright, with its center of mass located at the origin $(0, 0, 0)$. Then, the world space location of the particle $x_i$ can be computed with the help of the rotation matrix, then translated using the location of the center of mass
 
 \begin{equation}
-x_i = R\times r_i + x
+x_i = R\times r_i + x\label{eq:1}
 \end{equation}
 
 $R$ is a rotation matrix, which comes with many properties, for example if
@@ -252,7 +271,7 @@ R \times\begin{pmatrix}
 
 Angular velocity $\omega$ is used to describe the speed of rotation. Slightly counterintuitively, $\omega$ is a vector, where its direction gives the rotating axis and its magnitude gives the speed.
 
-Clearly differentiating the rotation matrix $R$ does not give the angular velocity vector $\omega$. Instead, with some careful analysis [appendix?], we would obtain
+Clearly differentiating the rotation matrix $R$ does not give the angular velocity vector $\omega$. Instead, with some careful analysis, we would obtain % APPENDIX?
 
 \begin{equation}
 \frac{d}{dt}R = \omega ^* \times R
@@ -271,7 +290,7 @@ where $v^*$ is the star operation that transforms vector $v=(x, y, z)$ to a matr
 Note a useful property of this operation
 
 \begin{equation}
-    a^* b = a \times b
+    a^* b = a \times b\label{eq:2}
 \end{equation}
 
 \subsubsection{Linear momentum $p$} 
@@ -288,9 +307,9 @@ Velocity of a particle $v_i$ is the derivative of its world space location $x_i$
 
 \begin{align*}
     v_i &= \frac{d}{dt}x_i \\
-        &= \frac{d}{dt}(R r_i + x) && \text{(by equation xxx)} \\
+        &= \frac{d}{dt}(R r_i + x) && \text{(by equation \eqref{eq:1})} \\
         &= \omega^* R r_i + v \\
-        &= \omega \times (R r_i) + v && \text{(by equation xxx)} \\
+        &= \omega \times (R r_i) + v && \text{(by equation \eqref{eq:2})} \\
         &= \omega \times (R r_i + x - x) + v \\
         &= \omega \times (x_i - x) + v
 \end{align*}
@@ -302,7 +321,7 @@ Now to derive $p$
       &= \sum m_i (\omega \times (x_i - x) + v) \\
       &= \sum m_i v + \omega \times \sum m_i (x_i - x) \\
       &= \sum m_i v + \omega \times (\sum m_i x_i - M x) \\
-      &= \sum m_i v && \text{(by equation xxx)} \\
+      &= \sum m_i v && \text{(by equation \eqref{eq:3})} \\
       &= (\sum m_i) v \\
       &= M v
 \end{align*} 
@@ -357,13 +376,13 @@ Differentiating $L$ gives the total torque $\tau$, similar to how differentiatin
 \frac{d}{dt} L = \tau
 \end{equation}
 
-\subsection{Collision detection and resolution / Nonpenetration constraints}
+\subsection{Collision detection and resolution}
 
 If at the end of the timeframe two rigid bodies end up clipping into each other, then there must have been a collision during the timeframe, meaning the states need to be corrected. This is done by first scanning for collision detection, and if detected, calculate relevant contact information, such as when and where two objects collide. Then the information will be used for collision resolution, where the velocity needs to be corrected before resuming the simulation.
 
 \subsubsection{Collision detection}
 
-Finding separating plane is a popular method for detecting collisions among convex polyhedrons. Concave objects are trickier to deal with, and luckily most concave objects are good enough when represented by a bounding convex object in practice. In rare cases convex decomposition is required, which is far more complicated and computationally intensive, with the current popular choice being V-HACD [reference], and its complexity should be outside the scope of this project.
+Finding separating plane is a popular method for detecting collisions among convex polyhedrons. Concave objects are trickier to deal with, and luckily most concave objects are good enough when represented by a bounding convex object in practice. In rare cases convex decomposition is required, which is far more complicated and computationally intensive, with the current popular choice being V-HACD\cite{mamou2016volumetric}, and its complexity should be outside the scope of this project.
 
 Consider two convex polyhedrons A and B. They are considered to be collided if any point in A is also in B. It is actually easier to detect if the pair has not collided, in which case no part of the two objects intersect. Note that having some parts touched between them does not count as collision, so as to avoid repeatedly resolving collision when two touching objects happen to move at the same speed. Using the convex property, there must be a separating plane that separates the space into either only containing A or only containing B.
 
@@ -428,7 +447,7 @@ Change in angular velocity is
 \Delta \omega_A = I_A^{-1} (r_A \times J_A)
 \end{equation}
 
-\subsection{Rendering / API}
+\subsection{Rendering and API}
 
 In the grand scheme of the physics engine, rendering is needed for visualization and debugging, which is done by supplying coordinates data at the end of each time frame to the renderer Blender.
 
@@ -436,14 +455,68 @@ The engine should also supply APIs for the user to set up their own simulation e
 
 \section{Requirement analysis}
 
-(Timeline, backup plan, development model)
-The requirements stayed consistent with the ones listed in the Project Proposal (Appendix []). The core project aims to provide a physics engine capable of modelling rigid bodies, collision detection, and collision resolution (either bouncy or resting). Then the engine will be evaluated with comparisons with existing physics engines under simple experimentations. For extensions adding supports for fluid dynamics, soft body dynamics and real time rendering, as well as evaluating the performance under different parameters.
+The requirements generally stayed consistent with the ones listed in the Project Proposal (Appendix \ref{proposallbl}). The core project aims to provide a physics engine capable of modelling rigid bodies, collision detection, and collision resolution (either bouncy or resting). Then the engine will be evaluated with comparisons with existing physics engines under simple experimentations. For extensions adding supports for fluid dynamics, soft body dynamics and real time rendering, as well as evaluating the performance under different parameters.
 
-Main list of deliverables with risk analysis, different modules with dependency
+List of main deliverables with risk analysis is analyzed in table \ref{dellbl}.
 
-[List: deliverable Implement XXX, Risk Low/Medium/High, Priority Low/Medium/High]
+\begin{table}[h]\label{dellbl}
+    \centering
+    \makebox[\linewidth]{
+    \begin{tabular}{|c|c|c|c|}
+    \hline 
+    \textbf{Deliverables} & \textbf{Category} & \textbf{Risk} & \textbf{Priority} \\
+    \hline 
+    Rigid body Dynamics Modelling & Core & High & High \\
+    Collision Detection & Core & Medium & Medium \\
+    Collision Resolution & Core & High & High \\
+    Rendering Support & Core & High & High \\
+    Experiment Evaluations & Core & Low & Medium \\
+    Soft body Dynamics implementations & Extension & Medium & Low \\
+    Performance Evaluation & Extension & Low & Medium \\
+    Rendering Integration & Extension & Medium & Low \\
+    Fluid Simulation & Extension & Medium & Low \\
+    \hline
+    \end{tabular}
+    }
+    \caption{Risk analysis of main deliverables}
+    \label{tab:third_party_software}
+\end{table}
 
-[Modules, arrow meaning depends on, colorcoded]
+Main modules and their dependency (arrows indicate dependency, extensions are colored in blue while core are colored in green) are analyzed in figure \ref{deplbl}.
+
+\begin{figure}\label{deplbl}
+    \centering
+\begin{tikzpicture}
+    \node [draw, fill=green!20] at (0,0) (a) {Learn background theory};
+    \node [draw, fill=green!20] at (0,-1.5) (b) {Setup physics engine environment};
+    \node [draw, fill=green!20] at (6.5, 0) (c) {Learn Blender};
+    \node [draw, fill=green!20] at (6.5, -1.5) (d) {Setup rendering environment};
+    \node [draw, fill=green!20] at (0,-3) (e) {Implement Geometry Utilities};
+    \node [draw, fill=green!20] at (3, -9) (f) {Implement APIs};
+    \node [draw, fill=green!20] at (0,-4.5) (g) {Rigid body modelling};
+    \node [draw, fill=green!20] at (0,-6) (h) {Implement Collision Detection};
+    \node [draw, fill=green!20] at (0,-7.5) (i) {Implement Collision Resolution};
+    \node [draw, fill=green!20] at (4,-11) (j) {Evaluate accuracy};
+    \node [draw, fill=blue!20] at (9,-11) (k) {Evaluate performance};
+    \node [draw, fill=blue!20] at (-3, -9) (l) {Implement Soft body simulation};
+    \node [draw, fill=blue!20] at (-3, -10.5) (m) {Implement Fluid simulation};
+    \node [draw, fill=blue!20] at (0, -12) (n) {Integrate Rendering};
+    \path [draw, ->] (c) -- (d);
+    \path [draw, ->] (d) -- (f);
+    \path [draw, ->] (f) -- (j);
+    \path [draw, ->] (f) -- (k);
+    \path [draw, ->] (f) -- (n);
+    \path [draw, ->] (a) -- (b);
+    \path [draw, ->] (b) -- (e);
+    \path [draw, ->] (e) -- (g);
+    \path [draw, ->] (g) -- (h);
+    \path [draw, ->] (h) -- (i);
+    \path [draw, ->] (i) -- (f);
+    \path [draw, ->] (i) -- (l);
+    \path [draw, ->] (i) -- (m);
+\end{tikzpicture}
+\caption{Module Dependency Analysis}
+\end{figure}
 
 \subsection{Development model}
 
@@ -456,21 +529,46 @@ The project mainly tackles software engineering challenges. The waterfall develo
 \item Contrast with agile development, the project focuses on building one predetermined software, so reiterations are unecessary.
 \end{itemize}
 
-During the process of the development there has been some delays in some parts, so I spent some buffer time to catch up with some difficulties, particularly in the implementation stage and dissertation writeup stage. Gantt chart is also used for the planning of the project:
+During the process of the development there has been some delays in some parts, so I spent some buffer time to catch up with some difficulties, particularly in the implementation stage and dissertation writeup stage. Gantt chart \ref{ganttlbl} is also used for the planning of the project.
 
-[Gantt chart of timeline]
 
-\chapter{Implementation}
+\begin{figure}\begin{center}\label{ganttlbl}
+    \resizebox{\linewidth}{!}{%
+\begin{ganttchart}{1}{30}[
+    
+    bar label font=\small,
+    milestone label font=\small,
+    group label font=\small,
+    expand chart=1.2\textwidth
+]
+    \gantttitle{Project Progress Gantt Chart (30 Weeks)}{30} \\
+    \gantttitlelist{1,...,30}{1} \\
+    \ganttbar{Implementation}{1}{15} \\
+    \ganttbar{Writeup}{22}{30} \\
+    \ganttbar{Proposal}{1}{2} \\
+    \ganttbar{Framework setup}{3}{4} \\
+    \ganttbar{Implement Modelling}{5}{8} \\
+    \ganttbar{Implement Collision Detection}{9}{12} \\
+    \ganttbar{Implement Collision Resolution}{12}{15} \\
+    \ganttbar{Evaluation}{18}{21} \\
+    \ganttbar{Dissertation drafting}{22}{25} \\
+    \ganttbar{Dissertation amending}{26}{30} \\
+    \end{ganttchart}
+    }%
+\end{center}\end{figure}
+
+\chapter{Implementation}\label{chap3}
 
 \section{Repository Overview}
 
-[Figure of repository structure]
+%herehereherehereherehereherehereherehereherehereherehereherehereherehereherehere
+[Figure of repository structure]TBA
 
-[Figure of modules interaction]
+[Figure of modules interaction]TBA
 
-[Figures] describes the structure of the repository. The main engine is put in the engine directory, being self-supportive on its own with encapsulated APIs for setting up experiments. The engine part is fully written in C++, and has its own structure, which will be described in [section XXX]. The rendering part is isolated from the main engine because it mainly uses third-party rendering library - Blender, to render the results provided by the APIs of the physics engine. However, the rendered videos were what I heavily relied on when testing and evaluating the engine. They will be described in [section XXX]. The report directory is for storing writeup files for the project.
+[Figures] describes the structure of the repository. The main engine is put in the engine directory, being self-supportive on its own with encapsulated APIs for setting up experiments. The engine part is fully written in C++, and has its own structure, which will be described in section \ref{englbl}. The rendering part is isolated from the main engine because it mainly uses third-party rendering library - Blender, to render the results provided by the APIs of the physics engine. However, the rendered videos were what I heavily relied on when testing and evaluating the engine. They will be described in [section XXX]. The report directory is for storing writeup files for the project.
 
-\section{Engine}
+\section{Engine}\ref{englbl}
 
 As a reminder, the physics engine mainly involves first modelling objects as rigid bodies, then uses a collision detection-resolution feedback loop for simulation. In the repository, these core mechanics are in the core directory. I used a geometry directory to provide utilities for computational geometry. The core directory includes 
 
@@ -501,7 +599,7 @@ RigidBodyForceAndTorque forceAndTorque)
 
 \subsection{Ordinary Differential Equations}
 
-Earlier in [section XXX], the state of a rigid body, $S$, and its derivative with regards to time $t$, $\frac{d}{dt}S$, are defined with variables from states $S$ together with outside force and torque. Force and torque are assumed to be known ahead of time (they are usually a constant, for example, gravity constantly pulls everything downwards, or other user-defined constant force fields), but they also might change depending on the result of collision resolution. They can be treated as a known function of time, say $f(t)$. The derivative depends on the force and torque and the current state, so it can be treated as a known function of both of them, say $g(S, f(t))$. This helps establishing a differential equation for predicting the next states
+Earlier in [section TBA], the state of a rigid body, $S$, and its derivative with regards to time $t$, $\frac{d}{dt}S$, are defined with variables from states $S$ together with outside force and torque. Force and torque are assumed to be known ahead of time (they are usually a constant, for example, gravity constantly pulls everything downwards, or other user-defined constant force fields), but they also might change depending on the result of collision resolution. They can be treated as a known function of time, say $f(t)$. The derivative depends on the force and torque and the current state, so it can be treated as a known function of both of them, say $g(S, f(t))$. This helps establishing a differential equation for predicting the next states
 
 \begin{equation}
 \frac{d}{dt}S = g(S, f(t))
@@ -540,7 +638,7 @@ Collision detection methods are called immediately after advancing the previous 
 \subsubsection{Bounding boxes}
 As a preprocessing step, the bounding boxes of all existing rigid bodies are generated. Bounding box is the smallest box that encapsulates the object but is also aligned with the axis, which simplifies computations. [fig] shows an example of a bounding box.
 
-[fig]
+[fig]TBA
 
 If collisions were to occur, the bounding boxes, which represent an even larger space, must collide first. So checking if two bounding boxes overlay is a good precondition for actual collisions, and does a good job of filtering out most of the non-colliding cases.
 
@@ -549,7 +647,7 @@ Checking if any pairs of bounding boxes overlap is much more efficient. Even a n
 \begin{itemize}
 \item One-dimensional case: Consider what will happen if the bounding boxes are in only one dimension. In that case, the boxes are actually simply segments. Let's say the $i$-th segment covers $l_i$ to $r_i$, and we are tasked with finding all the overlapping pairs quickly, where there are $n$ segments at the beginning, and at most $m$ pairs overlap.
 
-[fig]
+[fig]TBA
 
 This problem can be solved in $O(n \log n + m)$ time with a sweep line algorithm. First, all the endpoints ($l_i$ and $r_i$, a total of $2n$ endpoints) will be sorted from left to right. Then a sweep is performed from left to right, while keeping a list of which segments are active. When we get a left endpoint $l_i$, the segment is marked as active, and it will be paired with all other active segments. When we get a right endpoint $r_i$, the corresponding segment is removed from the active list. The list needs to support quick insertions and deletions, so a doubly linked list for example would suffice. The initial sorting costs $O(n\log n)$, the sweep costs $O(n)$, going through the pairs costs $O(m)$, adding to a cost of $O(n\log n + m)$, and is the most efficient algorithm for solving this problem.
 
@@ -611,7 +709,7 @@ This gives a complexity of $O((n + s) \cdot \log \frac{dt}{eps})$.
 
 \subsection{Collision Resolution}
 
-Most of the computations are already given in the previous section [section XXX]. Here, we just plug in the computations for the relevant quantities. In the code, it can be encapsulated as a simple method \code{resolveCollision(Collision *c, double coefficientOfResititution)}, where the collision is resolved by supplying the collision and the coefficient of resititution. 
+Most of the computations are already given in the previous section [section TBA]. Here, we just plug in the computations for the relevant quantities. In the code, it can be encapsulated as a simple method \code{resolveCollision(Collision *c, double coefficientOfResititution)}, where the collision is resolved by supplying the collision and the coefficient of resititution. 
 In the actual implementation I chose a default value for the coefficient as $\epsilon = 0.5$. 
 
 Now, after correcting the states of all rigid bodies, the states will be saved as a special time frame, and the simulation will resume in a physically correct manner.
@@ -622,7 +720,7 @@ Strictly speaking the rendering step is out of the scope of the actual project h
 
 \subsection{Motivation}
 
-I chose Blender because it is known as a very popular 3D rendering program. It turns out that it is popular for being friendly to people with little programming knowledge, with a good UI, but not particularly great for dumping external data in for it to render whatever I want. It seems that the only relevant functionality for this purpose is to use the Blender python scripting API, which, while has some documentations and some powers, aren't as well-studies as other functionalities of Blender, since it is still under active development and refinement. In fact, the documentation just updated to 4.1 [ref] within the duration of the project from 4.0.
+I chose Blender because it is known as a very popular 3D rendering program. It turns out that it is popular for being friendly to people with little programming knowledge, with a good UI, but not particularly great for dumping external data in for it to render whatever I want. It seems that the only relevant functionality for this purpose is to use the Blender python scripting API, which, while has some documentations and some powers, aren't as well-studies as other functionalities of Blender, since it is still under active development and refinement. In fact, the documentation just updated to 4.1 [TBA ref] within the duration of the project from 4.0.
 
 \subsection{Native python scripting}
 
@@ -644,7 +742,7 @@ Finally, I created a way to pipe the data the engine outputs to be directly used
 
 
 
-\chapter{Evaluation}
+\chapter{Evaluation}\label{chap4}
 
 
 Evaluation of physics engines in general can be quite challenging, 
@@ -730,7 +828,7 @@ The less these values vary, the more accurate the simulation is.
 
 \subsubsection{Result}
 
-All perfectly correct, for all engines. [fig]
+All perfectly correct, for all engines. [fig]TBA
 
 As seen in [fig], both the sum of momentum and the total energy stay true to the theoretical results with no noticeable inaccuracies. This is a very basic bouncing task, so as expected all physics engines could reliably accurately simulate it.
 
@@ -750,6 +848,7 @@ In order to obtain a theoretically perfect result, consider a cube moving fricti
 
 \subsubsection{Result}
 
+TBA
 5, 7.2, 7.433
 10, 5.04, 5.167
 20, 3.5, 3.633
@@ -791,6 +890,7 @@ The periods as simulated by the engines will be plotted against the angle $\thet
 
 \subsubsection{Result}
 
+TBA
 5, 18.24 (/ 2.5)
 10, 18.30
 20, 18.26
@@ -841,13 +941,45 @@ The results of the evaluations also show a high correlation with real-life physi
 
 \subsection{Limitations}
 
-As seen from some of the experiments [ref], the inaccuracies of simulating certain interactions are slightly greater than popular existing physics engine. Furthermore, external functionalities, configurable options, API documentations and bug considerations are definitely not as complete as other popular physics engines. Most modern physics engines provide several alternate simulation methods, for example for solving differential equations mentioned in [ref]. Some extensions like liquid simulation are also not in a working state in my engine but is supported by many other engines. On the other hand, they possess dedicated maintenance by large groups of developers, so it is not reasonable to aim at surpassing their massive project in every possible way.
+As seen from some of the experiments TBA[ref], the inaccuracies of simulating certain interactions are slightly greater than popular existing physics engine. Furthermore, external functionalities, configurable options, API documentations and bug considerations are definitely not as complete as other popular physics engines. Most modern physics engines provide several alternate simulation methods, for example for solving differential equations mentioned in TBA[ref]. Some extensions like liquid simulation are also not in a working state in my engine but is supported by many other engines. On the other hand, they possess dedicated maintenance by large groups of developers, so it is not reasonable to aim at surpassing their massive project in every possible way.
 
 \end{itemize}
 
+\chapter{Conclusion}\label{chap5}
 
-\chapter{Conclusion}
-TBA
+\section{Achievements}
+
+The built physics engine has successfully achieved all of the success criteria. Firstly, a simple physics engine was developed to accurately simulate rigid body dynamics, incorporating efficient collision handling mechanisms. Subsequently, by leveraging the capabilities of the rendering software Blender, various functionalities of its APIs were tested by conducting small experiments within the context of rigid body simulation. These experiments yielded demonstrable instances of successful simulations, as a way of showcasing the working state of the implemented physics engine. A comparative analysis with several publicly available physics engines were done based on these experiments, where the accuracy of the evaluation was measured and compared. The results showed that my physics engine consistently simulated similar results to these counterparts, therefore confirming its ability in the field of rigid body dynamics.
+
+\section{Lessons learnt}
+
+A very core part of this project throughout was software engineering. Having little experience with building upon actual hefty software projects, I found a lot of the challenges in this area. Some particular challenges I would like to highlight are:
+\begin{itemize}
+\item Using an automated build system with CMake and Makefile.
+\item Organizing a project repository.
+\item Using OOP concepts with C++ development.
+\item Devising computational geometry formulation.
+\item Algorithm designs for simulation.
+\item Deploying third-party software (Blender) in the project.
+\item Incorporating two different languages.
+\end{itemize}
+
+Outside of software development and the zeros and ones, my project management skill is also significantly tested with a medium length project. It turns out to be very difficult to balance project with regular life, and all the time constraints and meetings with supervisors also add quite a bit on the challenge. I end up running a bit low on time for the extensions and the dissertation writing, which is definitely a foreseeable mistake from the current view point. At the same time, I honed my academic report writeup ability with a project I knew the most about.
+
+For lessons more specific about my project, I find numerical debugging takes a ton of efforts, and it is very important to clear up the mind and get the initial calculation correct. The problem especially exacerbated with a somewhat shaky debugging method, and the time to take a test run and find the issues went higher than expected without very careful unit testings. I would consider laying down more unit testing code before ending up with an interconnected calculation mess for future projects like this.
+
+\section{Future work}
+
+I have many ideas for potential future work directions. They were not realistic due to the time constraints of the project submission, and some were mentioned before [TBA].
+
+\begin{itemize}
+\item Wider project aim: The built physics engine is primarily a personal project too simple for actual industry use without more optimizations and support. If time allows, the project could be more ambitious and aims at more recent ideas, for example making the whole physics engine differentiable to allow maching learning tunings mentioned in recent papers\cite{degrave2019differentiable}. 
+\item Better project structure: I used a render outside of the proposed physics engine for most of the debugging and visualization. The rendering software is better to be in-house than external, and debugging should have been separated from visualization. Ideally, there should be dedicated testing code for unit testing the functionalities separately, which would further reduce the number of bugs and issues in the project.
+\item Collision Checking Optimization: There are several subtle optimizations for collision detection. Scanning through potential pairs of rigid body is already a very interesting topic, and meanwhile my project explored an $O(n + s)$ per check idea, there could be other efficient algorithms to consider. Another possibilty I mentioned but didn't bother to implement is caching the pair of components that cause the collision from a previous timestamp, and using it to quickly check if the collisions just move to an adjacent compoent. This means storing vertices, edges, and faces in an ordered manner, and the closer two things are the more likely it is that in the case of collision they could both be separating plane candidates.
+\item Differential Equation: I used a simple Euler's method to advance the timestamp after deriving the derivatives. However, this is a very research-heavy topic, and various new methods have been put forward for accurately solving the differential equation for different contexts. Some recent work about this put forward the possibilities of data reinforcement\cite{koch2021data} as a possibilty.
+\item More extensive modules: I mostly focused on rigid body simulation for this project and had little time to proceed on other possible modules to add to my physics engine. There are many other considerations, and despite many of them being very difficult and being currently open to research, I would still be interested to see how incorporating them on top of my rigid body simulation system would go. Some potential ideas to consider are \cite{vinuesa2022enhancing}, \cite{obiols2020cfdnet}, \cite{li2022contact}, some of which proposing the incorporation of several machine learning methods.
+\item Open software packaging: Finally, as a way of contributing to actual public, it would be preferrable to have the project deliverable through open software means like GitHub. It would allow much more engagement for future support that directly focuses on target users, and thus set a more meaningful goal in the open source community.
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % the bibliography
@@ -858,5 +990,6 @@ TBA
 \appendix
 
 \chapter{Project Proposal}
+\label{proposallbl}
 \input{proposal}
 \end{document}
