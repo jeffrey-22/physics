@@ -6,8 +6,8 @@ from pysketcher.backend.matplotlib import MatplotlibBackend
 
 figure = ps.Figure(-1, 12, -1, 2, MatplotlibBackend)
 
-boxA = ps.Circle(ps.Point(0.5, 0.5), 1)
-boxB = ps.Circle(ps.Point(10.5, 0.5), 1)
+boxA = ps.Rectangle(ps.Point(0, 0), 1, 1)
+boxB = ps.Rectangle(ps.Point(10, 0), 1, 1)
 boxA.style.line_width = 10
 boxB.style.line_width = 10
 arrowA = ps.Arrow(ps.Point(2, 0.5), ps.Point(3, 0.5))
@@ -97,3 +97,53 @@ figure.add(box2)
 figure.add(txt)
 
 figure.save('img4.png')
+
+
+figure = ps.Figure(-1, 9, -1, 6.5, MatplotlibBackend)
+lst = []
+def addseg(lp, rp, id):
+    segA = ps.Line(lp, rp)
+    segA.style.line_width = 5
+    txtA = ps.Text("l", ps.Point(lp.x, lp.y+0.1))
+    txtA.style.font_size *= 6
+    txtAA = ps.Text(str(id), ps.Point(lp.x+0.15, lp.y+0.05))
+    txtAA.style.font_size *= 3
+    txtB = ps.Text("r", ps.Point(rp.x, rp.y+0.1))
+    txtB.style.font_size *= 6
+    txtBB = ps.Text(str(id), ps.Point(rp.x+0.15, rp.y+0.05))
+    txtBB.style.font_size *= 3
+    figure.add(segA)
+    figure.add(txtA)
+    figure.add(txtAA)
+    figure.add(txtB)
+    figure.add(txtBB)
+    lst.append((lp.x, "l" + str(id)))
+    lst.append((rp.x, "r" + str(id)))
+lp = ps.Point(0.5, 5.5)
+rp = ps.Point(3.5, 5.5)
+addseg(lp, rp, 1)
+lp = ps.Point(2, 4.5)
+rp = ps.Point(6, 4.5)
+addseg(lp, rp, 2)
+lp = ps.Point(4.5, 3.5)
+rp = ps.Point(5.5, 3.5)
+addseg(lp, rp, 3)
+lp = ps.Point(6.5, 2.5)
+rp = ps.Point(8.5, 2.5)
+addseg(lp, rp, 4)
+lp = ps.Point(7, 1.5)
+rp = ps.Point(8, 1.5)
+addseg(lp, rp, 5)
+lst = sorted(lst)
+segB = ps.Line(ps.Point(0.5, 0.2), ps.Point(8.5, 0.2))
+figure.add(segB)
+for (t, lbl) in lst:
+    circ = ps.Circle(ps.Point(t, 0.2), radius=0.03)
+    txt1 = ps.Text(lbl[0], ps.Point(t, 0.3))
+    txt2 = ps.Text(lbl[1], ps.Point(t+0.15, 0.25))
+    txt1.style.font_size *= 6
+    txt2.style.font_size *= 3
+    figure.add(circ)
+    figure.add(txt1)
+    figure.add(txt2)
+figure.save('img5.png')

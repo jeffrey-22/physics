@@ -12,6 +12,7 @@
 \usepackage{tikz}
 \usepackage{pgfgantt}
 \usepackage{lscape}
+\usepackage{dirtree}
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -201,7 +202,7 @@ After the initial setup of the objects as rigid bodies, the engine begins a main
 
 In each iteration of the loop, all rigid bodies are assumed to start in a nonpenetration state, that is, no pairs of rigid bodies intersect with each other. But touching on some faces are allowed. Then, we perform the unconstrained simulation for a small timeframe $dt$. During this simulation it is assumed that no collisions happened. Finally, collision detection and resolution are performed, correcting mistakes from the unconstrained simulation. Some more details of these steps are described below.
 
-\subsection{Rigid body modelling}
+\subsection{Rigid body modelling} \label{stateslbl}
 
 In general, the goal of unconstrained simulation is to first track the status of all rigid bodies as reasonable mathematical data structure, and then update them assuming no collisions ever happen.
 
@@ -397,7 +398,7 @@ Both cases can be checked by brute force over faces or edges of the two objects.
 
 In the case a collision does happen, find the exact moment the contact takes place, and record the normal of the separating plane at that moment, say $n$, as well as the points on the two bodies that contact. Next, hand the information over to collision resolution.
 
-\subsubsection{Collision resolution}
+\subsubsection{Collision resolution}\label{reslbl}
 
 Only the velocities at direction $n$ are altered after the collision takes place, so the first thing is to obtain component of the relative velocity in the $n$ direction using dot product.
 
@@ -561,16 +562,47 @@ During the process of the development there has been some delays in some parts, 
 
 \section{Repository Overview}
 
-%herehereherehereherehereherehereherehereherehereherehereherehereherehereherehere
-[Figure of repository structure]TBA
+\dirtree{%
+.1 physics.
+.2 engine.
+.3 core\DTcomment{For storing core components, like \code{collision\_detection.cpp}}.
+.3 geometry\DTcomment{For storing geometry utitilies, like \code{vector.h}}.
+.2 render.\DTcomment{For storing rendering scripts for Blender}.
+.2 report.
+}
 
-[Figure of modules interaction]TBA
+The above figure describes the structure of the repository. The main engine is put in the engine directory, being self-supportive on its own with encapsulated APIs for setting up experiments. The engine part is fully written in C++, and has its own structure, which will be described in section \ref{englbl}. The rendering part is isolated from the main engine because it mainly uses third-party rendering library - Blender, to render the results provided by the APIs of the physics engine. However, the rendered videos were what I heavily relied on when testing and evaluating the engine. They will be described in section \ref{renderimplbl}. The report directory is for storing writeup files for the project.
 
-[Figures] describes the structure of the repository. The main engine is put in the engine directory, being self-supportive on its own with encapsulated APIs for setting up experiments. The engine part is fully written in C++, and has its own structure, which will be described in section \ref{englbl}. The rendering part is isolated from the main engine because it mainly uses third-party rendering library - Blender, to render the results provided by the APIs of the physics engine. However, the rendered videos were what I heavily relied on when testing and evaluating the engine. They will be described in [section XXX]. The report directory is for storing writeup files for the project.
+\begin{figure}\label{interactionmodlbl}
+    \centering
+\begin{tikzpicture}
+    \node [draw, fill=green!20] at (4,-1.5) (a) {Geometry utitilies};
+    \node [draw, fill=green!20] at (0,-1.5) (b) {Rigid body modelling};
+    \node [draw, fill=green!20] at (0, 3) (c) {Render};
+    \node [draw, fill=green!20] at (0, 1.5) (d) {Core engine};
+    \node [draw, fill=green!20] at (4,1) (e) {Collision Detection};
+    \node [draw, fill=green!20] at (4, 2) (f) {Collision Resolution};
+    \node [none] at (7, 1.5) (g) {};
+    \node [none] at (7, 1) (h) {};
+    \path [draw, ->] (e) -- (f);
+    \path [draw, ->] (d) -- (e);
+    \path [draw, ->] (a) -- (d);
+    \path [draw, ->] (a) -- (e);
+    \path [draw, -] (a) -| (g);
+    \path [draw, ->] (h) |- (f);
+    \path [draw, ->] (b) -- (d);
+    \path [draw, ->] (b) -- (e);
+    \path [draw, ->] (d) -- (c);
+    \path [draw, ->] (f) -- (d);
+\end{tikzpicture}
+\caption{Interaction between modules}
+\end{figure}
 
-\section{Engine}\ref{englbl}
+Figure \ref{interactionmodlbl} gives an overview of the interactions between modules.
 
-As a reminder, the physics engine mainly involves first modelling objects as rigid bodies, then uses a collision detection-resolution feedback loop for simulation. In the repository, these core mechanics are in the core directory. I used a geometry directory to provide utilities for computational geometry. The core directory includes 
+\section{Engine}\label{englbl}
+
+As a reminder, the physics engine mainly involves first modelling objects as rigid bodies, then uses a collision detection-resolution feedback loop for simulation. In the repository, these core mechanics are in the core directory. I used a separate geometry directory to provide utilities for computational geometry.
 
 \subsection{Geometry}
 
@@ -597,9 +629,9 @@ RigidBodyState computeDerivative(RigidBodyState state,
 RigidBodyForceAndTorque forceAndTorque)
 \end{verbatim}
 
-\subsection{Ordinary Differential Equations}
+\subsection{Ordinary Differential Equations}\label{odelbl}
 
-Earlier in [section TBA], the state of a rigid body, $S$, and its derivative with regards to time $t$, $\frac{d}{dt}S$, are defined with variables from states $S$ together with outside force and torque. Force and torque are assumed to be known ahead of time (they are usually a constant, for example, gravity constantly pulls everything downwards, or other user-defined constant force fields), but they also might change depending on the result of collision resolution. They can be treated as a known function of time, say $f(t)$. The derivative depends on the force and torque and the current state, so it can be treated as a known function of both of them, say $g(S, f(t))$. This helps establishing a differential equation for predicting the next states
+Earlier in section \ref{stateslbl}, the state of a rigid body, $S$, and its derivative with regards to time $t$, $\frac{d}{dt}S$, are defined with variables from states $S$ together with outside force and torque. Force and torque are assumed to be known ahead of time (they are usually a constant, for example, gravity constantly pulls everything downwards, or other user-defined constant force fields), but they also might change depending on the result of collision resolution. They can be treated as a known function of time, say $f(t)$. The derivative depends on the force and torque and the current state, so it can be treated as a known function of both of them, say $g(S, f(t))$. This helps establishing a differential equation for predicting the next states
 
 \begin{equation}
 \frac{d}{dt}S = g(S, f(t))
@@ -636,18 +668,29 @@ This stage turns out to be one of the trickier modules to implement. I implement
 Collision detection methods are called immediately after advancing the previous unconstrained simulation. The problem of the previous unconstrained simulation is that it does not consider collision or interactions between rigid bodies in the engine. In fact, what we did is to advance the states no matter what happened, and check if any problems arise afterwards. The idea behind this is that collisions are rare in most scenerios, and it is common that only a couple of collisions happens throughout the experiment. Hence, we could be lazy and check for collision every $10$ steps of regular unconstrained simulation, since checking for collisions are quite resource-intensive. However there is the issue of having objects clip through each other with longer time frames of checking. In practice I called the detection after every regular unconstrained simulation since it is enough for simple experiments.
 
 \subsubsection{Bounding boxes}
-As a preprocessing step, the bounding boxes of all existing rigid bodies are generated. Bounding box is the smallest box that encapsulates the object but is also aligned with the axis, which simplifies computations. [fig] shows an example of a bounding box.
+As a preprocessing step, the bounding boxes of all existing rigid bodies are generated. Bounding box is the smallest box that encapsulates the object but is also aligned with the axis, which simplifies computations. Figure \ref{bboxfig} shows an example of a bounding box. For cuboid and spheres the bounding box is easy to obtain. Harder shapes require more effort however\cite{o1985finding}.
 
-[fig]TBA
+\begin{figure}
+\label{bboxfig}
+\begin{center}
+    \makebox[\textwidth]{\includegraphics[width=\textwidth]{figs/Bounding_box.png}}
+  \end{center}
+    \caption{Bounding Box. Source: \cite{bbox}}
+\end{figure}
 
 If collisions were to occur, the bounding boxes, which represent an even larger space, must collide first. So checking if two bounding boxes overlay is a good precondition for actual collisions, and does a good job of filtering out most of the non-colliding cases.
 
 Checking if any pairs of bounding boxes overlap is much more efficient. Even a naive pairwise check between all pairs of bounding boxes are more efficient because no need to iterate over edges and faces, with a complexity of $O(n^2)$ where $n$ is the number of rigid bodies. But it can be solved more efficiently.
 
 \begin{itemize}
-\item One-dimensional case: Consider what will happen if the bounding boxes are in only one dimension. In that case, the boxes are actually simply segments. Let's say the $i$-th segment covers $l_i$ to $r_i$, and we are tasked with finding all the overlapping pairs quickly, where there are $n$ segments at the beginning, and at most $m$ pairs overlap.
+\item One-dimensional case: Consider what will happen if the bounding boxes are in only one dimension. In that case, the boxes are actually simply segments. Let's say the $i$-th segment covers $l_i$ to $r_i$, and we are tasked with finding all the overlapping pairs quickly, where there are $n$ segments at the beginning, and at most $m$ pairs overlap. Figure \ref{seglbl} gives a demonstration.
 
-[fig]TBA
+\begin{figure}
+    \begin{center}
+        \makebox[\textwidth]{\includegraphics[width=\textwidth]{figs/img5.png}}
+      \end{center}
+    \caption{Segments}
+\end{figure}
 
 This problem can be solved in $O(n \log n + m)$ time with a sweep line algorithm. First, all the endpoints ($l_i$ and $r_i$, a total of $2n$ endpoints) will be sorted from left to right. Then a sweep is performed from left to right, while keeping a list of which segments are active. When we get a left endpoint $l_i$, the segment is marked as active, and it will be paired with all other active segments. When we get a right endpoint $r_i$, the corresponding segment is removed from the active list. The list needs to support quick insertions and deletions, so a doubly linked list for example would suffice. The initial sorting costs $O(n\log n)$, the sweep costs $O(n)$, going through the pairs costs $O(m)$, adding to a cost of $O(n\log n + m)$, and is the most efficient algorithm for solving this problem.
 
@@ -709,18 +752,18 @@ This gives a complexity of $O((n + s) \cdot \log \frac{dt}{eps})$.
 
 \subsection{Collision Resolution}
 
-Most of the computations are already given in the previous section [section TBA]. Here, we just plug in the computations for the relevant quantities. In the code, it can be encapsulated as a simple method \code{resolveCollision(Collision *c, double coefficientOfResititution)}, where the collision is resolved by supplying the collision and the coefficient of resititution. 
+Most of the computations are already given in the previous section \ref{reslbl}. Here, we just plug in the computations for the relevant quantities. In the code, it can be encapsulated as a simple method \code{resolveCollision(Collision *c, double coefficientOfResititution)}, where the collision is resolved by supplying the collision and the coefficient of resititution. 
 In the actual implementation I chose a default value for the coefficient as $\epsilon = 0.5$. 
 
 Now, after correcting the states of all rigid bodies, the states will be saved as a special time frame, and the simulation will resume in a physically correct manner.
 
-\section{Render}
+\section{Render}\label{renderimplbl}
 
 Strictly speaking the rendering step is out of the scope of the actual project here, because the users could just invoke the APIs of the core engine and get whatever data they would like to collect. However, it has ultimately become an important step of the project with the need to perform experiments and visualize simple simulations. This is also where a lot of trouble shows up for my project which ultimately stems from my poor knowledge of rendering libraries prior to this project.
 
 \subsection{Motivation}
 
-I chose Blender because it is known as a very popular 3D rendering program. It turns out that it is popular for being friendly to people with little programming knowledge, with a good UI, but not particularly great for dumping external data in for it to render whatever I want. It seems that the only relevant functionality for this purpose is to use the Blender python scripting API, which, while has some documentations and some powers, aren't as well-studies as other functionalities of Blender, since it is still under active development and refinement. In fact, the documentation just updated to 4.1 [TBA ref] within the duration of the project from 4.0.
+I chose Blender because it is known as a very popular 3D rendering program. It turns out that it is popular for being friendly to people with little programming knowledge, with a good UI, but not particularly great for dumping external data in for it to render whatever I want. It seems that the only relevant functionality for this purpose is to use the Blender python scripting API, which, while has some documentations and some powers, aren't as well-studies as other functionalities of Blender, since it is still under active development and refinement. In fact, the documentation just updated to 4.1\cite{blenderdoc} within the duration of the project from 4.0.
 
 \subsection{Native python scripting}
 
@@ -789,17 +832,17 @@ They have then been further narrowed down in consideration of supportability, do
   \begin{tabular}
   {|c|c|}
   \hline 
-  Physics engine                                & Reason???TBA, +screenshots, +brief description on setups                                                         \\
+  Physics engine                                & Features                                                         \\
   \hline 
-  PhysX                                         & www.nvidia.com/en-gb/geforce/technologies/physx        \\
-  SOFA & www.sofa-framework.org                                 \\
+  PhysX                                         & Very popular, integrated in Unity, easy to setup and use        \\
+  SOFA                 & Professional physics simulation, highly configurable                \\
   \hline
   \end{tabular}
   }
 \end{table}
 
 
-\section{Quantitative evaluations}
+\section{Quantitative evaluations} \ref{explbl}
 
 The functionalities of selected physics engines along with mine will be evaluated through a series of small runtime tests.
 The tests partially drew inspiration from other existing researches on physics engines\cite{seugling2006evaluation}.
@@ -828,9 +871,19 @@ The less these values vary, the more accurate the simulation is.
 
 \subsubsection{Result}
 
-All perfectly correct, for all engines. [fig]TBA
+\begin{figure} \label{ev1}
+    \begin{center}
+        \makebox[\textwidth]{\includegraphics[width=\textwidth]{figs/p1.png}}
+      \end{center}
+    \end{figure}
 
-As seen in [fig], both the sum of momentum and the total energy stay true to the theoretical results with no noticeable inaccuracies. This is a very basic bouncing task, so as expected all physics engines could reliably accurately simulate it.
+    \begin{figure} \label{ev2}
+        \begin{center}
+            \makebox[\textwidth]{\includegraphics[width=\textwidth]{figs/p2.png}}
+          \end{center}
+        \end{figure}
+            
+As seen in figures \ref{ev1} and \ref{ev2}, both the sum of momentum and the total energy stay true to the theoretical results with no noticeable inaccuracies. This is a very basic bouncing task, so as expected all physics engines could reliably accurately simulate it.
 
 \subsection{Support test}
 
@@ -848,19 +901,13 @@ In order to obtain a theoretically perfect result, consider a cube moving fricti
 
 \subsubsection{Result}
 
-TBA
-5, 7.2, 7.433
-10, 5.04, 5.167
-20, 3.5, 3.633
-30, 2.88, 2.900
-40, 2.54, 2.567
-50, 2.32, 2.333
-60, 2.18, 2.233
-70, 2.08, 2.133
-80, 2.04, 2.100
-85, 2.02, 2.067
+\begin{figure} \label{ev3}
+    \begin{center}
+        \makebox[\textwidth]{\includegraphics[width=\textwidth]{figs/p3.png}}
+      \end{center}
+    \end{figure}
 
-As seen in [fig], in general the time it takes for the cube to slide down matches with the theoretical result, but in general all the engines give a slightly higher result. This is likely due to accumulated inaccuracies of repeated collisions along the slope. From the view of a physics engine, the cube repeated collides with the slope, and the result is its downwards momentum transfers into sliding momentum. The transfers needed to be calculated every time, so it could be slightly delayed compared to the theoretical analysis.
+As seen in figure \ref{ev3}, in general the time it takes for the cube to slide down matches with the theoretical result, but in general all the engines give a slightly higher result. This is likely due to accumulated inaccuracies of repeated collisions along the slope. From the view of a physics engine, the cube repeated collides with the slope, and the result is its downwards momentum transfers into sliding momentum. The transfers needed to be calculated every time, so it could be slightly delayed compared to the theoretical analysis.
 
 \subsection{Pendulum test}
 
@@ -929,19 +976,19 @@ Then evaluate the performance.
 
 \item Implement soft-body dynamics.
 
-Referring back to the success criteria, I consider all core criteria to be completed and successful. Extensions were attempted but not as successful. All basic modules related to rigid body simulation are implemented and evaluated with simple experiments. The followings are some example screenshots of the resulting rendered video.
+Referring back to the success criteria, I consider all core criteria to be completed and successful. Extensions were attempted but not as successful. All basic modules related to rigid body simulation are implemented and evaluated with simple experiments. The followings figure TBA are some example screenshots of the resulting rendered video.
 
 \begin{center}
   \makebox[\textwidth]{\includegraphics[width=\textwidth]{figs/sc1.png}}
 \end{center}
 
-[fig]
+[fig]TBA
 
 The results of the evaluations also show a high correlation with real-life physics results. Therefore, my physics engine is indeed capable of simulating simple rigid body interactions.
 
 \subsection{Limitations}
 
-As seen from some of the experiments TBA[ref], the inaccuracies of simulating certain interactions are slightly greater than popular existing physics engine. Furthermore, external functionalities, configurable options, API documentations and bug considerations are definitely not as complete as other popular physics engines. Most modern physics engines provide several alternate simulation methods, for example for solving differential equations mentioned in TBA[ref]. Some extensions like liquid simulation are also not in a working state in my engine but is supported by many other engines. On the other hand, they possess dedicated maintenance by large groups of developers, so it is not reasonable to aim at surpassing their massive project in every possible way.
+As seen from some of the experiments in section \ref{explbl}, the inaccuracies of simulating certain interactions are slightly greater than popular existing physics engine. Furthermore, external functionalities, configurable options, API documentations and bug considerations are definitely not as complete as other popular physics engines. Most modern physics engines provide several alternate simulation methods, for example for solving differential equations mentioned in section \ref{odelbl}. Some extensions like liquid simulation are also not in a working state in my engine but is supported by many other engines. On the other hand, they possess dedicated maintenance by large groups of developers, so it is not reasonable to aim at surpassing their massive project in every possible way.
 
 \end{itemize}
 
@@ -964,21 +1011,21 @@ A very core part of this project throughout was software engineering. Having lit
 \item Incorporating two different languages.
 \end{itemize}
 
-Outside of software development and the zeros and ones, my project management skill is also significantly tested with a medium length project. It turns out to be very difficult to balance project with regular life, and all the time constraints and meetings with supervisors also add quite a bit on the challenge. I end up running a bit low on time for the extensions and the dissertation writing, which is definitely a foreseeable mistake from the current view point. At the same time, I honed my academic report writeup ability with a project I knew the most about.
+Outside of software development and the zeros and ones, my project management skill is also significantly tested with a medium length project. It turns out to be very difficult to balance project with regular life, and all the time constraints and meetings with supervisors also add quite a bit on the challenge. I end up running a bit low on time for the extensions and the dissertation writing, which is definitely a foreseeable mistake from the current view point. At the same time, I honed my academic report write up ability with a project I knew the most about.
 
 For lessons more specific about my project, I find numerical debugging takes a ton of efforts, and it is very important to clear up the mind and get the initial calculation correct. The problem especially exacerbated with a somewhat shaky debugging method, and the time to take a test run and find the issues went higher than expected without very careful unit testings. I would consider laying down more unit testing code before ending up with an interconnected calculation mess for future projects like this.
 
 \section{Future work}
 
-I have many ideas for potential future work directions. They were not realistic due to the time constraints of the project submission, and some were mentioned before [TBA].
+I have many ideas for potential future work directions. They were not realistic due to the time constraints of the project submission, and some were mentioned before in previous sections.
 
 \begin{itemize}
-\item Wider project aim: The built physics engine is primarily a personal project too simple for actual industry use without more optimizations and support. If time allows, the project could be more ambitious and aims at more recent ideas, for example making the whole physics engine differentiable to allow maching learning tunings mentioned in recent papers\cite{degrave2019differentiable}. 
+\item Wider project aim: The built physics engine is primarily a personal project too simple for actual industry use without more optimizations and support. If time allows, the project could be more ambitious and aims at more recent ideas, for example making the whole physics engine differentiable to allow machine learning tuning mentioned in recent papers\cite{degrave2019differentiable}. 
 \item Better project structure: I used a render outside of the proposed physics engine for most of the debugging and visualization. The rendering software is better to be in-house than external, and debugging should have been separated from visualization. Ideally, there should be dedicated testing code for unit testing the functionalities separately, which would further reduce the number of bugs and issues in the project.
-\item Collision Checking Optimization: There are several subtle optimizations for collision detection. Scanning through potential pairs of rigid body is already a very interesting topic, and meanwhile my project explored an $O(n + s)$ per check idea, there could be other efficient algorithms to consider. Another possibilty I mentioned but didn't bother to implement is caching the pair of components that cause the collision from a previous timestamp, and using it to quickly check if the collisions just move to an adjacent compoent. This means storing vertices, edges, and faces in an ordered manner, and the closer two things are the more likely it is that in the case of collision they could both be separating plane candidates.
-\item Differential Equation: I used a simple Euler's method to advance the timestamp after deriving the derivatives. However, this is a very research-heavy topic, and various new methods have been put forward for accurately solving the differential equation for different contexts. Some recent work about this put forward the possibilities of data reinforcement\cite{koch2021data} as a possibilty.
+\item Collision Checking Optimization: There are several subtle optimizations for collision detection. Scanning through potential pairs of rigid body is already a very interesting topic, and meanwhile my project explored an $O(n + s)$ per check idea, there could be other efficient algorithms to consider. Another possibility I mentioned but didn't bother to implement is caching the pair of components that cause the collision from a previous timestamp, and using it to quickly check if the collisions just move to an adjacent component. This means storing vertices, edges, and faces in an ordered manner, and the closer two things are the more likely it is that in the case of collision they could both be separating plane candidates.
+\item Differential Equation: I used a simple Euler's method to advance the timestamp after deriving the derivatives. However, this is a very research-heavy topic, and various new methods have been put forward for accurately solving the differential equation for different contexts. Some recent work about this put forward the possibilities of data reinforcement\cite{koch2021data} as a possibility.
 \item More extensive modules: I mostly focused on rigid body simulation for this project and had little time to proceed on other possible modules to add to my physics engine. There are many other considerations, and despite many of them being very difficult and being currently open to research, I would still be interested to see how incorporating them on top of my rigid body simulation system would go. Some potential ideas to consider are \cite{vinuesa2022enhancing}, \cite{obiols2020cfdnet}, \cite{li2022contact}, some of which proposing the incorporation of several machine learning methods.
-\item Open software packaging: Finally, as a way of contributing to actual public, it would be preferrable to have the project deliverable through open software means like GitHub. It would allow much more engagement for future support that directly focuses on target users, and thus set a more meaningful goal in the open source community.
+\item Open software packaging: Finally, as a way of contributing to actual public, it would be preferable to have the project deliverable through open software means like GitHub. It would allow much more engagement for future support that directly focuses on target users, and thus set a more meaningful goal in the open source community.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
