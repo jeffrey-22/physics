@@ -28,7 +28,7 @@
 \newcommand{\code}{\texttt}
 % more readable
 \begin{document}
-\bibliographystyle{plain}
+\bibliographystyle{unsrt}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Title
 \pagestyle{empty}
@@ -61,7 +61,7 @@ Candidate Number: & \bf 2419E \\
 College: & \bf Robinson College \\
 Project Title: & \bf Building a Physics Engine From Scratch \\
 Examination: & \bf Computer Science Tripos -- Part II, May 2024 \\
-Word Count: & \bf 10051\footnotemark[1] \\
+Word Count: & \bf 10296\footnotemark[1] \\
 Code Line Count: & \bf3903\footnotemark[2] \\
 Project Originator: & The candidate \\
 Project Supervisor: & Joseph March \\
@@ -276,7 +276,7 @@ R \times\begin{pmatrix}
 
 Angular velocity $\omega$ is used to describe the speed of rotation. Slightly counterintuitively, $\omega$ is a vector, where its direction gives the rotating axis and its magnitude gives the speed.
 
-Clearly differentiating the rotation matrix $R$ does not give the angular velocity vector $\omega$. Instead, with some careful analysis, we would obtain % APPENDIX?
+Clearly differentiating the rotation matrix $R$ does not give the angular velocity vector $\omega$. Instead, with some careful analysis (details in Appendix \ref{rotlbl}), we would obtain % APPENDIX?
 
 \begin{equation}
 \frac{d}{dt}R = \omega ^* \times R
@@ -1135,6 +1135,103 @@ I have many ideas for potential future work directions. They were not realistic 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % the appendices
 \appendix
+
+\chapter{Differentiating rotation matrix}\label{rotlbl}
+
+This method is based on the result of \cite{zhao2016time}.
+
+$R$ is the rotation matrix:
+
+\begin{equation}
+    R = \begin{pmatrix}
+        R_{xx} & R_{xy} & R_{xz} \\
+        R_{yx} & R_{yy} & R_{yz} \\
+        R_{zx} & R_{zy} & R_{zz}
+    \end{pmatrix}
+\end{equation}
+
+and multiplying R by an axis-aligned unit vector, for example $(1, 0, 0)$, gives
+
+\begin{equation}
+R \times\begin{pmatrix}
+    1 \\
+    0 \\
+    0
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+    R_{xx} \\
+    R_{yx} \\
+    R_{zx}
+    \end{pmatrix}
+\end{equation}
+
+In fact, this trick could be repeated for all the axis-aligned unit vectors, so
+
+\begin{equation}
+    R \times\begin{pmatrix}
+        0 \\
+        1 \\
+        0
+        \end{pmatrix}
+        =
+        \begin{pmatrix}
+        R_{xy} \\
+        R_{yy} \\
+        R_{zy}
+        \end{pmatrix}
+    \end{equation}
+
+    
+\begin{equation}
+    R \times\begin{pmatrix}
+        0 \\
+        0 \\
+        1
+        \end{pmatrix}
+        =
+        \begin{pmatrix}
+        R_{xz} \\
+        R_{yz} \\
+        R_{zz}
+        \end{pmatrix}
+    \end{equation}
+
+This means after applying rotation matrix $R$, vector $(1, 0, 0)$ becomes $(R_{xx}, R_{yx}, R_{zx})$, vector $(0, 1, 0)$ becomes $(R_{xy}, R_{yy}, R_{zy})$, and vector $(0, 0, 1)$ becomes $(R_{xz}, R_{yz}, R_{zz})$.
+
+Now, how can we relate this with the angular velocity $\omega$? As a reminder, angular velocity $\omega$ is a vector, with its direction giving the rotating axis and its magnitude giving the speed. 
+
+To begin with, a vector rotating around a fixed axis should lie inside a circle, whose center is on the fixed axis. Therefore, the derivative of such a rotating vector is going to be a tangent line of the circle. Say the vector is $v$ and its derivative, $\frac{d}{dt}v$, should be perpendicular to the vector itself $v$ due to it being a tangent line. It's also in the plane of the circle, which should be perpendicular to the rotating axis. Therefore, being perpendicular to both $v$ and the rotating axis, it is only fair if it is defined as a cross product: $\frac{d}{dt}v = \omega\times v$, and the magnitude of $\omega$ helps deciding the speed.
+
+Consider the case where $v=(R_{xx}, R_{yx}, R_{zx})$. In this case, $v$ happens to be an actual vector in the body while being represented by the rotation matrix, and its derivative is just $\omega\times (R_{xx}, R_{yx}, R_{zx})$. Similar, we could plug in cases where $v=(R_{xy}, R_{yy}, R_{zy})$ and $v=(R_{xz}, R_{yz}, R_{zz})$:
+
+\begin{equation}
+\frac{d}{dt}R = \begin{pmatrix}
+    \omega\times\begin{pmatrix}
+        R_{xx} \\
+        R_{yx} \\
+        R_{zx}
+        \end{pmatrix} &
+        \omega\times\begin{pmatrix}
+            R_{xy} \\
+            R_{yy} \\
+            R_{zy}
+            \end{pmatrix} &
+            \omega\times\begin{pmatrix}
+                R_{xz} \\
+                R_{yz} \\
+                R_{zz}
+                \end{pmatrix}
+    \end{pmatrix}
+\end{equation}
+
+Rewriting this equation using the star operation gives
+
+\begin{equation}
+    \frac{d}{dt}R = \omega^* \times R
+\end{equation}
+
+as required.
 
 \chapter{Project Proposal}
 \label{proposallbl}
