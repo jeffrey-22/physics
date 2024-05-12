@@ -3,6 +3,8 @@
 
 #include "rigidbody.h"
 
+class BoundingBox;
+
 class CuboidRigidBody : public RigidBody{
 public:
     double length, width, height;

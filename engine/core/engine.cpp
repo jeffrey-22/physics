@@ -50,6 +50,11 @@ public:
     }
     int bruteForceCheckCollision(Collision* c = nullptr) {
         int n = bodies.size();
+        int cnt = 0;
+        for (int i = 0; i < n; i++)
+            for (int j = i + 1; j < n; j++)
+                for (int k = 1; k <= 200; k++)
+                    cnt+=i & j & k;
         return 0;
         for (int i = 0; i < n; i++)
             for (int j = i + 1; j < n; j++)
@@ -91,6 +96,7 @@ public:
                 auto c = advanceToFirstCollision(dt);
                 CollisionResolution::resolveCollision(c);
             }
+            std::cout << 1;
         }
     }
 private:

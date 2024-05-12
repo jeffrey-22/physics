@@ -26,3 +26,8 @@ p(t) = R(t)p0 + x(t)
   
   conda activate chrono
   conda install -c conda-forge mkl=2020
+
+  3.appe
+  4.summary
+  5.ref
+  6.grammar
